@@ -38,4 +38,5 @@ Set-AzKeyVaultSecret -VaultName $CoreSecretsKeyVaultName -Name "SQLAdminUsername
 Set-AzKeyVaultSecret -VaultName $CoreSecretsKeyVaultName -Name "SQLAdminPassword" -SecretValue (SecureString $SQLAdminPasswordP)
 
 
-#New-AzResourceGroupDeployment -TemplateFile main.bicep
+New-AzResourceGroupDeployment -ResourceGroupName $RGName -TemplateFile main.bicep `
+-RGName $RGName -RGLocation $RGLocation -CoreSecretsKeyVaultName $CoreSecretsKeyVaultName
