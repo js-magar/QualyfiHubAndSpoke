@@ -27,7 +27,7 @@ module hub 'modules/hub.bicep'={
     vnetAddressPrefix:'10.10'
   }
 }
-module core 'modules/hub.bicep'={
+module core 'modules/core.bicep'={
   name:'coreDeployment'
   params:{
     RGLocation:RGLocation
