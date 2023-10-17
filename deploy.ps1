@@ -8,6 +8,9 @@ function RandomiseString{
     return $returnText
 }
 #Parameters Decleration
+$RGName = (Get-AzResourceGroup).ResourceGroupName
+$RGLocation = (Get-AzResourceGroup).Location
+$CoreTags = @{"Area"="CoreServices"}
 $CoreSecretsKeyVaultName = "kv-secret-core-" + (RandomiseString 6)
 
 #Key Vault Properties|	
@@ -19,6 +22,10 @@ Write-Output "Virtual Machine Admin Username : $VMAdminUsernameP"
 Write-Output "Virtual Machine Admin Password : $VMAdminPasswordP"
 Write-Output "SQL Admin Password : $SQLAdminUsernameP"
 Write-Output "SQL Admin Password : $SQLAdminPasswordP"
+Write-Output "CoreSecretsKeyVaultName : $CoreSecretsKeyVaultName"
+
+#Deploy Keyvault
+New-AzKeyVault -ResourceGroupName $RGName -Location $RGLocation -Name $CoreSecretsKeyVaultName -EnabledForTemplateDeployment -Tag $CoreTags
 
 
 #New-AzResourceGroupDeployment -TemplateFile main.bicep
