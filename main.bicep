@@ -20,3 +20,10 @@ module prodSpoke 'modules/spoke.bicep'={
     vnetAddressPrefix:'10.31'
   }
 }
+module hub 'modules/hub.bicep'={
+  name:'hubDeployment'
+  params:{
+    RGLocation:RGLocation
+    vnetAddressPrefix:'10.10'
+  }
+}
