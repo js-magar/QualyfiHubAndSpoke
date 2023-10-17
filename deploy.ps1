@@ -29,6 +29,7 @@ Write-Output "SQL Admin Password : $SQLAdminUsernameP"
 Write-Output "SQL Admin Password : $SQLAdminPasswordP"
 Write-Output "CoreSecretsKeyVaultName : $CoreSecretsKeyVaultName"
 
+#Connect Connect-AzAccount
 #Deploy Keyvault
 New-AzKeyVault -ResourceGroupName $RGName -Location $RGLocation -Name $CoreSecretsKeyVaultName -EnabledForTemplateDeployment -Tag $CoreTags
 #Set Secrets

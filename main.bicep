@@ -12,3 +12,11 @@ module devSpoke 'modules/spoke.bicep'={
     vnetAddressPrefix:'10.30'
   }
 }
+module prodSpoke 'modules/spoke.bicep'={
+  name:'prodSpokeDeployment'
+  params:{
+    RGLocation:RGLocation
+    devOrProd:'prod'
+    vnetAddressPrefix:'10.31'
+  }
+}
