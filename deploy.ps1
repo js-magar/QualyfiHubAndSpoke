@@ -7,6 +7,11 @@ function RandomiseString{
     $returnText = -Join($allowedText.tochararray() | Get-Random -Count $allowedLength | % {[char]$_})
     return $returnText
 }
+function SecureString{
+    param ([string]$unsecuredString = "a")
+    return (ConvertTo-SecureString $unsecuredString -AsPlainText -Force)
+    
+}
 #Parameters Decleration
 $RGName = (Get-AzResourceGroup).ResourceGroupName
 $RGLocation = (Get-AzResourceGroup).Location
@@ -26,6 +31,11 @@ Write-Output "CoreSecretsKeyVaultName : $CoreSecretsKeyVaultName"
 
 #Deploy Keyvault
 New-AzKeyVault -ResourceGroupName $RGName -Location $RGLocation -Name $CoreSecretsKeyVaultName -EnabledForTemplateDeployment -Tag $CoreTags
+#Set Secrets
+Set-AzKeyVaultSecret -VaultName $CoreSecretsKeyVaultName -Name "VMAdminUsername" -SecretValue (SecureString $VMAdminUsernameP)
+Set-AzKeyVaultSecret -VaultName $CoreSecretsKeyVaultName -Name "VMAdminPassword" -SecretValue (SecureString $VMAdminPasswordP)
+Set-AzKeyVaultSecret -VaultName $CoreSecretsKeyVaultName -Name "SQLAdminUsername" -SecretValue (SecureString $SQLAdminUsernameP)
+Set-AzKeyVaultSecret -VaultName $CoreSecretsKeyVaultName -Name "SQLAdminPassword" -SecretValue (SecureString $SQLAdminPasswordP)
 
 
 #New-AzResourceGroupDeployment -TemplateFile main.bicep
