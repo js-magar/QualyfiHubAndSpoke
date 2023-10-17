@@ -41,3 +41,5 @@ Write-Output "CoreSecretsKeyVaultName : $CoreSecretsKeyVaultName"
 
 New-AzResourceGroupDeployment -ResourceGroupName $RGName -TemplateFile main.bicep `
 -RGName $RGName -RGLocation $RGLocation -CoreSecretsKeyVaultName $CoreSecretsKeyVaultName
+
+#New-AzResourceGroupDeployment -ResourceGroupName '1-1950a98a-playground-sandbox' -TemplateFile modules\core.bicep -RGLocation 'eastus' -vnetAddressPrefix '10.20'

@@ -34,3 +34,9 @@ module core 'modules/hub.bicep'={
     vnetAddressPrefix:'10.20'
   }
 }
+module peerings 'modules/peerings.bicep'={
+  name:'peeringsDeployment'
+  params:{
+    RGLocation:RGLocation
+  }
+}

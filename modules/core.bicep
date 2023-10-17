@@ -5,7 +5,7 @@ param vnetAddressPrefix string
 
 var virtualNetworkName = 'vnet-core-${RGLocation}-001'
 
-resource virtualNetwork 'Microsoft.Network/virtualNetworks@2021-05-01' = {
+resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-05-01' = {
   name: virtualNetworkName
   location: RGLocation
   properties: {
