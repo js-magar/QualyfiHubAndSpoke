@@ -39,4 +39,10 @@ module peerings 'modules/peerings.bicep'={
   params:{
     RGLocation:RGLocation
   }
+  dependsOn:[
+    devSpoke
+    prodSpoke
+    hub
+    core
+  ]
 }
