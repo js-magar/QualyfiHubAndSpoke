@@ -4,11 +4,18 @@ param RGName string
 param RGLocation string
 param CoreSecretsKeyVaultName string
 
+var GatewaySubnetName ='GatewaySubnet'
+var AppgwSubnetName ='AppgwSubnet'
+var AzureFirewallSubnetName ='AzureFirewallSubnet'
+var AzureBastionSubnetName ='AzureBastionSubnet'
+var DefaultNSGName ='defaultNSG'
+var firewallName = 'firewall-hub-${RGLocation}-001'
+
 resource keyVault 'Microsoft.KeyVault/vaults@2023-02-01' existing = {
   name: CoreSecretsKeyVaultName
 }
 resource defaultNSG 'Microsoft.Network/networkSecurityGroups@2023-05-01' ={
-  name:'defaultNSG'
+  name: DefaultNSGName
   location:RGLocation
 }
 module devSpoke 'modules/spoke.bicep'={
@@ -32,6 +39,11 @@ module hub 'modules/hub.bicep'={
   params:{
     RGLocation:RGLocation
     vnetAddressPrefix:'10.10'
+    GatewaySubnetName:GatewaySubnetName
+    AppgwSubnetName:AppgwSubnetName
+    AzureFirewallSubnetName:AzureFirewallSubnetName
+    AzureBastionSubnetName:AzureBastionSubnetName
+    firewallName:firewallName
   }
 }
 module core 'modules/core.bicep'={
@@ -48,6 +60,8 @@ module peerings 'modules/peerings.bicep'={
   name:'peeringsDeployment'
   params:{
     RGLocation:RGLocation
+    AzureFirewallSubnetName:AzureFirewallSubnetName
+    firewallName:firewallName
   }
   dependsOn:[
     devSpoke
