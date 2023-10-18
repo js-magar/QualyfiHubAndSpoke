@@ -42,3 +42,37 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-05-01' = {
     ]
   }
 }
+
+resource BastionSubnet 'Microsoft.Network/virtualNetworks/subnets@2023-05-01' existing = {name: 'AzureBastionSubnet',parent: virtualNetwork}
+
+resource bastionPIP 'Microsoft.Network/publicIPAddresses@2019-11-01' = {
+  name: 'pip-bastion-hub-${RGLocation}-001'
+  location: RGLocation
+  properties: {
+    publicIPAllocationMethod: 'Dynamic'
+    dnsSettings: {
+      domainNameLabel: 'dnsname'
+    }
+  }
+}
+resource bastion 'Microsoft.Network/bastionHosts@2023-05-01' ={
+  name: 'bastion-hub-${RGLocation}-001'
+  location:RGLocation
+  properties: {
+    ipConfigurations: [
+      {
+        name: 'ipconfig'
+        properties: {
+          subnet: {
+            id: BastionSubnet.id
+          }
+          publicIPAddress: {
+            id: bastionPIP.id
+          }
+        }
+      }
+    ]
+  }
+}
+
+
