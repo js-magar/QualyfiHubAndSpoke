@@ -6,8 +6,13 @@ param vnetAddressPrefix string
 param adminUsername string
 @secure()
 param adminPassword string
+param defaultNSGName string
 
 var virtualNetworkName = 'vnet-core-${RGLocation}-001'
+
+resource defaultNSG 'Microsoft.Network/networkSecurityGroups@2023-05-01' existing ={
+  name: defaultNSGName
+}
 
 resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-05-01' = {
   name: virtualNetworkName
@@ -23,12 +28,14 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-05-01' = {
         name: 'VMSubnet'
         properties: {
           addressPrefix: '${vnetAddressPrefix}.1.0/24'
+          networkSecurityGroup:{  id: defaultNSG.id }
         }
       }
       {
         name: 'KVSubnet'
         properties: {
           addressPrefix: '${vnetAddressPrefix}.2.0/24'
+          networkSecurityGroup:{  id: defaultNSG.id }
         }
       }
     ]
@@ -90,7 +97,7 @@ resource windowsVM 'Microsoft.Compute/virtualMachines@2020-12-01' = {
     }
     diagnosticsProfile: {
       bootDiagnostics: {
-        enabled: false
+        enabled: true
       }
     }
   }

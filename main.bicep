@@ -7,7 +7,10 @@ param CoreSecretsKeyVaultName string
 resource keyVault 'Microsoft.KeyVault/vaults@2023-02-01' existing = {
   name: CoreSecretsKeyVaultName
 }
-
+resource defaultNSG 'Microsoft.Network/networkSecurityGroups@2023-05-01' ={
+  name:'defaultNSG'
+  location:RGLocation
+}
 module devSpoke 'modules/spoke.bicep'={
   name:'devSpokeDeployment'
   params:{
@@ -38,6 +41,7 @@ module core 'modules/core.bicep'={
     vnetAddressPrefix:'10.20'
     adminUsername:keyVault.getSecret('VMAdminUsername')
     adminPassword:keyVault.getSecret('VMAdminPassword')
+    defaultNSGName:defaultNSG.name
   }
 }
 module peerings 'modules/peerings.bicep'={
