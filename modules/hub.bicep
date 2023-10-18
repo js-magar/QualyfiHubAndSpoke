@@ -48,11 +48,11 @@ resource BastionSubnet 'Microsoft.Network/virtualNetworks/subnets@2023-05-01' ex
 resource bastionPIP 'Microsoft.Network/publicIPAddresses@2019-11-01' = {
   name: 'pip-bastion-hub-${RGLocation}-001'
   location: RGLocation
+  sku: {
+    name: 'Standard'
+  }
   properties: {
-    publicIPAllocationMethod: 'Dynamic'
-    dnsSettings: {
-      domainNameLabel: 'dnsname'
-    }
+    publicIPAllocationMethod: 'Static'
   }
 }
 resource bastion 'Microsoft.Network/bastionHosts@2023-05-01' ={
