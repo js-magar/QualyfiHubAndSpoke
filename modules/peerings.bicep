@@ -118,8 +118,31 @@ resource routeTable 'Microsoft.Network/routeTables@2019-11-01' = {
           nextHopIpAddress: firewall.properties.hubIPAddresses.privateIPAddress
         }
       }
+      {
+        name: 'core1Route'
+        properties: {
+          addressPrefix: coreVirtualNetwork.properties.addressSpace.addressPrefixes[0]
+          nextHopType:'VirtualAppliance'
+          nextHopIpAddress: firewall.properties.hubIPAddresses.privateIPAddress
+        }
+      }
+      {
+        name: 'dev1Route'
+        properties: {
+          addressPrefix: devVirtualNetwork.properties.addressSpace.addressPrefixes[0]
+          nextHopType:'VirtualAppliance'
+          nextHopIpAddress: firewall.properties.hubIPAddresses.privateIPAddress
+        }
+      }
+      {
+        name: 'prod1Route'
+        properties: {
+          addressPrefix: prodVirtualNetwork.properties.addressSpace.addressPrefixes[0]
+          nextHopType:'VirtualAppliance'
+          nextHopIpAddress: firewall.properties.hubIPAddresses.privateIPAddress
+        }
+      }
     ]
-    disableBgpRoutePropagation: true
   }
 }
 
