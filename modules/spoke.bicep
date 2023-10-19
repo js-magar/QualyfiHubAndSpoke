@@ -52,6 +52,9 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-09-01'={
   location:RGLocation
   kind: 'linux'
   sku:{name: appServicePlanSku }
+  properties:{
+    reserved:true
+  }
 }
 resource appService 'Microsoft.Web/sites@2022-09-01' ={
   name:appServiceName
@@ -59,7 +62,7 @@ resource appService 'Microsoft.Web/sites@2022-09-01' ={
   properties:{
     serverFarmId:appServicePlan.id
     siteConfig:{
-      linuxFxVersion:'DOTNETCORE:7.0'
+      linuxFxVersion:'DOTNETCORE|7.0'
     }
   }
 }
