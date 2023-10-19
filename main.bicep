@@ -3,6 +3,7 @@
 param RGName string
 param RGLocation string
 param CoreSecretsKeyVaultName string
+param RandString string
 
 var GatewaySubnetName ='GatewaySubnet'
 var AppgwSubnetName ='AppgwSubnet'
@@ -24,6 +25,7 @@ module devSpoke 'modules/spoke.bicep'={
     RGLocation:RGLocation
     devOrProd:'dev'
     vnetAddressPrefix:'10.30'
+    randString: RandString
   }
 }
 module prodSpoke 'modules/spoke.bicep'={
@@ -32,6 +34,7 @@ module prodSpoke 'modules/spoke.bicep'={
     RGLocation:RGLocation
     devOrProd:'prod'
     vnetAddressPrefix:'10.31'
+    randString: RandString
   }
 }
 module hub 'modules/hub.bicep'={
