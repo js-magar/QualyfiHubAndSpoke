@@ -2,6 +2,7 @@
 param RGLocation string
 param AzureFirewallSubnetName string
 param firewallName string
+param firewallPrivateIP string
 
 var devVirtualNetworkName = 'vnet-dev-${RGLocation}-001'
 var prodVirtualNetworkName = 'vnet-prod-${RGLocation}-001'
@@ -105,6 +106,7 @@ resource devToHubPeering 'Microsoft.Network/virtualNetworks/virtualNetworkPeerin
 //resource FirewallSubnet 'Microsoft.Network/virtualNetworks/subnets@2023-05-01' existing = {name: AzureFirewallSubnetName,parent: hubVirtualNetwork}
 resource firewall 'Microsoft.Network/azureFirewalls@2023-05-01' existing = {name:firewallName}
 //user defined routes
+
 resource routeTable 'Microsoft.Network/routeTables@2019-11-01' = {
   name: 'routetable-${RGLocation}-001'
   location: RGLocation
@@ -115,7 +117,7 @@ resource routeTable 'Microsoft.Network/routeTables@2019-11-01' = {
         properties: {
           addressPrefix: '0.0.0.0/0'
           nextHopType:'VirtualAppliance'
-          nextHopIpAddress: firewall.properties.hubIPAddresses.privateIPAddress
+          nextHopIpAddress: firewallPrivateIP
         }
       }
       {
@@ -123,7 +125,7 @@ resource routeTable 'Microsoft.Network/routeTables@2019-11-01' = {
         properties: {
           addressPrefix: coreVirtualNetwork.properties.addressSpace.addressPrefixes[0]
           nextHopType:'VirtualAppliance'
-          nextHopIpAddress: firewall.properties.hubIPAddresses.privateIPAddress
+          nextHopIpAddress: firewallPrivateIP
         }
       }
       {
@@ -131,7 +133,7 @@ resource routeTable 'Microsoft.Network/routeTables@2019-11-01' = {
         properties: {
           addressPrefix: devVirtualNetwork.properties.addressSpace.addressPrefixes[0]
           nextHopType:'VirtualAppliance'
-          nextHopIpAddress: firewall.properties.hubIPAddresses.privateIPAddress
+          nextHopIpAddress: firewallPrivateIP
         }
       }
       {
@@ -139,7 +141,7 @@ resource routeTable 'Microsoft.Network/routeTables@2019-11-01' = {
         properties: {
           addressPrefix: prodVirtualNetwork.properties.addressSpace.addressPrefixes[0]
           nextHopType:'VirtualAppliance'
-          nextHopIpAddress: firewall.properties.hubIPAddresses.privateIPAddress
+          nextHopIpAddress: firewallPrivateIP
         }
       }
     ]

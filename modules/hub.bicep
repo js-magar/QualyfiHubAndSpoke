@@ -145,4 +145,5 @@ resource firewallRuleCollection 'Microsoft.Network/firewallPolicies/ruleCollecti
     }]
   }
 }
+output firewallPrivateIP string = firewall.properties.hubIPAddresses.privateIPAddress
 

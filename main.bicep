@@ -65,6 +65,7 @@ module peerings 'modules/peerings.bicep'={
     RGLocation:RGLocation
     AzureFirewallSubnetName:AzureFirewallSubnetName
     firewallName:firewallName
+    firewallPrivateIP:hub.outputs.firewallPrivateIP
   }
   dependsOn:[
     devSpoke

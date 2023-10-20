@@ -51,7 +51,10 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-09-01'={
   name: appServicePlanName
   location:RGLocation
   kind: 'linux'
-  sku:{name: appServicePlanSku }
+  sku:{
+    name: appServicePlanSku
+    tier : 'Basic'
+   }
   properties:{
     reserved:true
   }
@@ -71,11 +74,11 @@ resource codeAppService 'Microsoft.Web/sites/sourcecontrols@2022-09-01' ={
   name:'web'
   properties:{
     repoUrl:'https://github.com/Azure-Samples/dotnetcore-docs-hello-world'
+    isManualIntegration:true
     branch:'master'
   }
 }
 resource AppServiceSubnet 'Microsoft.Network/virtualNetworks/subnets@2023-05-01' existing = {name: appServiceSubnetName,parent: virtualNetwork}
-
 resource appServicePrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-05-01' ={
   name:'private-endpoint-${appService.name}'
   location:RGLocation
