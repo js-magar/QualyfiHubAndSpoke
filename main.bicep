@@ -26,6 +26,8 @@ module devSpoke 'modules/spoke.bicep'={
     devOrProd:'dev'
     vnetAddressPrefix:'10.30'
     randString: RandString
+    adminUsername:keyVault.getSecret('SQLAdminUsername')
+    adminPassword:keyVault.getSecret('SQLAdminPassword')
   }
 }
 module prodSpoke 'modules/spoke.bicep'={
@@ -35,6 +37,8 @@ module prodSpoke 'modules/spoke.bicep'={
     devOrProd:'prod'
     vnetAddressPrefix:'10.31'
     randString: RandString
+    adminUsername:keyVault.getSecret('SQLAdminUsername')
+    adminPassword:keyVault.getSecret('SQLAdminPassword')
   }
 }
 module hub 'modules/hub.bicep'={

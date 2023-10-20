@@ -6,12 +6,19 @@ param devOrProd string = 'dev'
 param RGLocation string
 param vnetAddressPrefix string
 param randString string
+@secure()
+param adminUsername string
+@secure()
+param adminPassword string
 
 var virtualNetworkName = 'vnet-${devOrProd}-${RGLocation}-001'
 var appServicePlanName = 'asp-${devOrProd}-${RGLocation}-001--${randString}'
 var appServicePlanSku = 'B1'
 var appServiceName = 'as-${devOrProd}-${RGLocation}-001--${randString}'
 var appServiceSubnetName ='AppSubnet'
+var SQLServerName = 'sql-${devOrProd}-${RGLocation}-001--${randString}'
+var SQLServerSku = 'B1'
+var SQLDatabaseName = 'sqldb-${devOrProd}-${RGLocation}-001--${randString}'
 
 resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-05-01' = {
   name: virtualNetworkName
@@ -78,7 +85,8 @@ resource codeAppService 'Microsoft.Web/sites/sourcecontrols@2022-09-01' ={
     branch:'master'
   }
 }
-resource AppServiceSubnet 'Microsoft.Network/virtualNetworks/subnets@2023-05-01' existing = {name: appServiceSubnetName,parent: virtualNetwork}
+resource AppServiceSubnet 'Microsoft.Network/virtualNetworks/subnets@2023-05-01' existing = {name: appServiceSubnetName,parent: virtualNetwork
+}
 resource appServicePrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-05-01' ={
   name:'private-endpoint-${appService.name}'
   location:RGLocation
@@ -96,6 +104,15 @@ resource appServicePrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-05-0
           ]
         }
   }]
+  }
+}
+//SQL Server
+resource sqlServer 'Microsoft.Sql/servers@2021-11-01' = {
+  name:SQLServerName
+  location:RGLocation
+  properties:{
+    administratorLogin:adminUsername
+    administratorLoginPassword:adminPassword
   }
 }
 

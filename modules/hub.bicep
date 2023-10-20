@@ -145,5 +145,5 @@ resource firewallRuleCollection 'Microsoft.Network/firewallPolicies/ruleCollecti
     }]
   }
 }
-output firewallPrivateIP string = firewall.properties.hubIPAddresses.privateIPAddress
+output firewallPrivateIP string = '${vnetAddressPrefix}.${AzureFirewallSubnetAddressPrefix}.4' //firewall.properties.hubIPAddresses.privateIPAddress
 
