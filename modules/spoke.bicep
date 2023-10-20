@@ -19,6 +19,7 @@ var appServiceSubnetName ='AppSubnet'
 var SQLServerName = 'sql-${devOrProd}-${RGLocation}-001--${randString}'
 var SQLServerSku = 'B1'
 var SQLDatabaseName = 'sqldb-${devOrProd}-${RGLocation}-001--${randString}'
+var SQLServerSubnetName ='SqlSubnet'
 
 resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-05-01' = {
   name: virtualNetworkName
@@ -32,13 +33,12 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-05-01' = {
     subnets: [
       {
         name: appServiceSubnetName
-
         properties: {
           addressPrefix: '${vnetAddressPrefix}.1.0/24'
         }
       }
       {
-        name: 'SqlSubnet'
+        name: SQLServerSubnetName
         properties: {
           addressPrefix: '${vnetAddressPrefix}.2.0/24'
         }
@@ -106,13 +106,43 @@ resource appServicePrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-05-0
   }]
   }
 }
-//SQL Server
+//SQL
 resource sqlServer 'Microsoft.Sql/servers@2021-11-01' = {
   name:SQLServerName
   location:RGLocation
   properties:{
     administratorLogin:adminUsername
     administratorLoginPassword:adminPassword
+  }
+}
+resource sqlDB 'Microsoft.Sql/servers/databases@2021-11-01' = {
+  name:SQLDatabaseName
+  location:RGLocation
+  parent: sqlServer
+  sku:{
+    name:'B0'
+    tier:'Basic'
+  }
+}
+resource SQLSubnet 'Microsoft.Network/virtualNetworks/subnets@2023-05-01' existing = {name: SQLServerSubnetName,parent: virtualNetwork
+}
+resource sqlServerPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-05-01' ={
+  name:'private-endpoint-${sqlServer.name}'
+  location:RGLocation
+  properties:{
+    subnet:{
+      id:SQLSubnet.id
+    }
+    privateLinkServiceConnections:[
+      {
+        name:'private-endpoint-${sqlServer.name}'
+        properties:{
+          privateLinkServiceId: sqlServer.id
+          groupIds:[
+            'sites'
+          ]
+        }
+  }]
   }
 }
 
