@@ -19,6 +19,10 @@ resource defaultNSG 'Microsoft.Network/networkSecurityGroups@2023-05-01' ={
   name: DefaultNSGName
   location:RGLocation
 }
+resource routeTable 'Microsoft.Network/routeTables@2019-11-01' = {
+  name: 'routetable-${RGLocation}-001'
+  location: RGLocation
+}
 module devSpoke 'modules/spoke.bicep'={
   name:'devSpokeDeployment'
   params:{
@@ -28,6 +32,8 @@ module devSpoke 'modules/spoke.bicep'={
     randString: RandString
     adminUsername:keyVault.getSecret('SQLAdminUsername')
     adminPassword:keyVault.getSecret('SQLAdminPassword')
+    defaultNSGName:defaultNSG.name
+    routeTableName:routeTable.name
   }
 }
 module prodSpoke 'modules/spoke.bicep'={
@@ -39,6 +45,8 @@ module prodSpoke 'modules/spoke.bicep'={
     randString: RandString
     adminUsername:keyVault.getSecret('SQLAdminUsername')
     adminPassword:keyVault.getSecret('SQLAdminPassword')
+    defaultNSGName:defaultNSG.name
+    routeTableName:routeTable.name
   }
 }
 module hub 'modules/hub.bicep'={
@@ -61,6 +69,7 @@ module core 'modules/core.bicep'={
     adminUsername:keyVault.getSecret('VMAdminUsername')
     adminPassword:keyVault.getSecret('VMAdminPassword')
     defaultNSGName:defaultNSG.name
+    routeTableName:routeTable.name
   }
 }
 module peerings 'modules/peerings.bicep'={

@@ -10,6 +10,8 @@ param randString string
 param adminUsername string
 @secure()
 param adminPassword string
+param defaultNSGName string
+param routeTableName string
 
 var virtualNetworkName = 'vnet-${devOrProd}-${RGLocation}-001'
 var appServicePlanName = 'asp-${devOrProd}-${RGLocation}-001--${randString}'
@@ -22,6 +24,11 @@ var SQLDatabaseName = 'sqldb-${devOrProd}-${RGLocation}-001--${randString}'
 var SQLServerSubnetName ='SqlSubnet'
 var storageAccountName = 'st${devOrProd}001${randString}'
 
+resource routeTable 'Microsoft.Network/routeTables@2019-11-01' existing = {name: routeTableName}
+
+resource defaultNSG 'Microsoft.Network/networkSecurityGroups@2023-05-01' existing ={
+  name: defaultNSGName
+}
 resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-05-01' = {
   name: virtualNetworkName
   location: RGLocation
@@ -36,12 +43,16 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-05-01' = {
         name: appServiceSubnetName
         properties: {
           addressPrefix: '${vnetAddressPrefix}.1.0/24'
+          networkSecurityGroup:{  id: defaultNSG.id }
+          routeTable:{id:routeTable.id}
         }
       }
       {
         name: SQLServerSubnetName
         properties: {
           addressPrefix: '${vnetAddressPrefix}.2.0/24'
+          networkSecurityGroup:{  id: defaultNSG.id }
+          routeTable:{id:routeTable.id}
         }
       }
     ]
@@ -53,6 +64,8 @@ resource storageAccountSubnet 'Microsoft.Network/virtualNetworks/subnets@2021-03
   name: 'StSubnet'
   properties: {
     addressPrefix: '${vnetAddressPrefix}.3.0/24'
+    networkSecurityGroup:{  id: defaultNSG.id }
+    routeTable:{id:routeTable.id}
   }
 }
 resource appServicePlan 'Microsoft.Web/serverfarms@2022-09-01'={
@@ -121,7 +134,7 @@ resource sqlDB 'Microsoft.Sql/servers/databases@2021-11-01' = {
   location:RGLocation
   parent: sqlServer
   sku:{
-    name:'B0'
+    name:'Basic'
     tier:'Basic'
   }
 }
@@ -140,7 +153,7 @@ resource sqlServerPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-05-01
         properties:{
           privateLinkServiceId: sqlServer.id
           groupIds:[
-            'sites'
+            'sqlServer'
           ]
         }
   }]
@@ -168,13 +181,16 @@ resource storageAccountPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-
         properties:{
           privateLinkServiceId: storageAccount.id
           groupIds:[
-            'sites'
+            'blob'
           ]
         }
   }]
   }
 }
-//SQLAudit
+//SQLAudit https://learn.microsoft.com/en-us/azure/templates/microsoft.sql/servers/auditingsettings?pivots=deployment-language-bicep
+//https://learn.microsoft.com/en-us/sql/relational-databases/security/auditing/sql-server-audit-database-engine?view=sql-server-ver16
+//https://learn.microsoft.com/en-us/azure/azure-sql/database/auditing-overview?view=azuresql
+
 
 
 

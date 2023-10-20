@@ -7,12 +7,14 @@ param adminUsername string
 @secure()
 param adminPassword string
 param defaultNSGName string
+param routeTableName string
 
 var virtualNetworkName = 'vnet-core-${RGLocation}-001'
 
 resource defaultNSG 'Microsoft.Network/networkSecurityGroups@2023-05-01' existing ={
   name: defaultNSGName
 }
+resource routeTable 'Microsoft.Network/routeTables@2019-11-01' existing = {name: routeTableName}
 
 resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-05-01' = {
   name: virtualNetworkName
@@ -29,6 +31,7 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-05-01' = {
         properties: {
           addressPrefix: '${vnetAddressPrefix}.1.0/24'
           networkSecurityGroup:{  id: defaultNSG.id }
+          routeTable:{id:routeTable.id}
         }
       }
       {
@@ -36,6 +39,7 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-05-01' = {
         properties: {
           addressPrefix: '${vnetAddressPrefix}.2.0/24'
           networkSecurityGroup:{  id: defaultNSG.id }
+          routeTable:{id:routeTable.id}
         }
       }
     ]
