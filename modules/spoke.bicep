@@ -20,6 +20,7 @@ var SQLServerName = 'sql-${devOrProd}-${RGLocation}-001--${randString}'
 var SQLServerSku = 'B1'
 var SQLDatabaseName = 'sqldb-${devOrProd}-${RGLocation}-001--${randString}'
 var SQLServerSubnetName ='SqlSubnet'
+var storageAccountName = 'st${devOrProd}001${randString}'
 
 resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-05-01' = {
   name: virtualNetworkName
@@ -47,7 +48,7 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-05-01' = {
   }
 }
 
-resource subnet 'Microsoft.Network/virtualNetworks/subnets@2021-03-01' = if (devOrProd == 'prod') {
+resource storageAccountSubnet 'Microsoft.Network/virtualNetworks/subnets@2021-03-01' = if (devOrProd == 'prod') {
   parent: virtualNetwork
   name: 'StSubnet'
   properties: {
@@ -145,6 +146,35 @@ resource sqlServerPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-05-01
   }]
   }
 }
+//StorageAccount
+resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = if (devOrProd == 'prod') {
+  name: storageAccountName
+  kind: 'StorageV2'
+  location: RGLocation
+  sku:{
+    name:'Standard_LRS'
+  }
+}
+resource storageAccountPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-05-01' = if (devOrProd == 'prod') {
+  name:'private-endpoint-${storageAccount.name}'
+  location:RGLocation
+  properties:{
+    subnet:{
+      id:storageAccountSubnet.id
+    }
+    privateLinkServiceConnections:[
+      {
+        name:'private-endpoint-${storageAccount.name}'
+        properties:{
+          privateLinkServiceId: storageAccount.id
+          groupIds:[
+            'sites'
+          ]
+        }
+  }]
+  }
+}
+//SQLAudit
 
 
 
