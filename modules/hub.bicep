@@ -52,7 +52,7 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-05-01' = {
     ]
   }
 }
-/*
+
 //Bastion Code
 resource BastionSubnet 'Microsoft.Network/virtualNetworks/subnets@2023-05-01' existing = {name: AzureBastionSubnetName,parent: virtualNetwork}
 
@@ -100,7 +100,7 @@ resource firewallPIP 'Microsoft.Network/publicIPAddresses@2019-11-01' = {
 }
 
 resource firewall 'Microsoft.Network/azureFirewalls@2023-05-01' ={
-  name: 'firewall-hub-${RGLocation}-001'
+  name: firewallName
   location:RGLocation
   properties:{
     hubIPAddresses:{
@@ -143,7 +143,7 @@ resource firewallRuleCollection 'Microsoft.Network/firewallPolicies/ruleCollecti
       ]
     }]
   }
-}*/
+}
 
 output firewallPrivateIP string = '${vnetAddressPrefix}.${AzureFirewallSubnetAddressPrefix}.4' //firewall.properties.hubIPAddresses.privateIPAddress
 
