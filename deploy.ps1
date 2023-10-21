@@ -4,7 +4,7 @@ function RandomiseString{
         [int]$allowedLength = 10,
         [string]$allowedText ="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890"
     )
-    $returnText = -Join($allowedText.tochararray() | Get-Random -Count $allowedLength | % {[char]$_})
+    $returnText = -Join($allowedText.tochararray() | Get-Random -Count $allowedLength | ForEach-Object {[char]$_})
     return $returnText
 }
 function SecureString{
@@ -40,6 +40,6 @@ Set-AzKeyVaultSecret -VaultName $CoreSecretsKeyVaultName -Name "SQLAdminPassword
 
 
 New-AzResourceGroupDeployment -ResourceGroupName $RGName -TemplateFile main.bicep `
--RGName $RGName -RGLocation $RGLocation -CoreSecretsKeyVaultName $CoreSecretsKeyVaultName -RandString (RandomiseString 6 "abcdefghijklmnopqrstuvwxyz1234567890") 
+-RGLocation $RGLocation -CoreSecretsKeyVaultName $CoreSecretsKeyVaultName -RandString (RandomiseString 6 "abcdefghijklmnopqrstuvwxyz1234567890") 
 
 #New-AzResourceGroupDeployment -ResourceGroupName '1-1950a98a-playground-sandbox' -TemplateFile modules\core.bicep -RGLocation 'eastus' -vnetAddressPrefix '10.20'

@@ -19,7 +19,7 @@ var appServicePlanSku = 'B1'
 var appServiceName = 'as-${devOrProd}-${RGLocation}-001--${randString}'
 var appServiceSubnetName ='AppSubnet'
 var SQLServerName = 'sql-${devOrProd}-${RGLocation}-001--${randString}'
-var SQLServerSku = 'B1'
+var SQLServerSku = 'Basic'
 var SQLDatabaseName = 'sqldb-${devOrProd}-${RGLocation}-001--${randString}'
 var SQLServerSubnetName ='SqlSubnet'
 var storageAccountName = 'st${devOrProd}001${randString}'
@@ -134,8 +134,8 @@ resource sqlDB 'Microsoft.Sql/servers/databases@2021-11-01' = {
   location:RGLocation
   parent: sqlServer
   sku:{
-    name:'Basic'
-    tier:'Basic'
+    name:SQLServerSku
+    tier:SQLServerSku
   }
 }
 resource SQLSubnet 'Microsoft.Network/virtualNetworks/subnets@2023-05-01' existing = {name: SQLServerSubnetName,parent: virtualNetwork

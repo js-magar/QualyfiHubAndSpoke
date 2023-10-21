@@ -56,7 +56,7 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-05-01' = {
 //Bastion Code
 resource BastionSubnet 'Microsoft.Network/virtualNetworks/subnets@2023-05-01' existing = {name: AzureBastionSubnetName,parent: virtualNetwork}
 
-resource bastionPIP 'Microsoft.Network/publicIPAddresses@2019-11-01' = {
+resource bastionPIP 'Microsoft.Network/publicIPAddresses@2023-05-01' = {
   name: 'pip-bastion-hub-${RGLocation}-001'
   location: RGLocation
   sku: {
@@ -66,7 +66,7 @@ resource bastionPIP 'Microsoft.Network/publicIPAddresses@2019-11-01' = {
     publicIPAllocationMethod: 'Static'
   }
 }
-resource bastion 'Microsoft.Network/bastionHosts@2023-05-01' ={
+resource bastion 'Microsoft.Network/bastionHosts@2023-05-01' = {
   name: 'bastion-hub-${RGLocation}-001'
   location:RGLocation
   properties: {
@@ -88,7 +88,7 @@ resource bastion 'Microsoft.Network/bastionHosts@2023-05-01' ={
 //Firewall Code
 resource FirewallSubnet 'Microsoft.Network/virtualNetworks/subnets@2023-05-01' existing = {name: AzureFirewallSubnetName,parent: virtualNetwork}
 
-resource firewallPIP 'Microsoft.Network/publicIPAddresses@2019-11-01' = {
+resource firewallPIP 'Microsoft.Network/publicIPAddresses@2023-05-01' = {
   name: 'pip-firewall-hub-${RGLocation}-001'
   location: RGLocation
   sku: {
@@ -147,4 +147,57 @@ resource firewallRuleCollection 'Microsoft.Network/firewallPolicies/ruleCollecti
 
 output firewallPrivateIP string = '${vnetAddressPrefix}.${AzureFirewallSubnetAddressPrefix}.4' //firewall.properties.hubIPAddresses.privateIPAddress
 
+//AppGateway
+resource AppGatewaySubnet 'Microsoft.Network/virtualNetworks/subnets@2023-05-01' existing = {name: AppgwSubnetName,parent: virtualNetwork}
+
+resource appGatewayPIP 'Microsoft.Network/publicIPAddresses@2023-05-01' = {
+  name: 'pip-appGateway-hub-${RGLocation}-001'
+  location: RGLocation
+  sku: {
+    name: 'Standard'
+  }
+  properties: {
+    publicIPAllocationMethod: 'Static'
+  }
+}
+/*
+resource appGateway 'Microsoft.Network/applicationGateways@2023-05-01' = {
+  name: 'appGateway-hub-${RGLocation}-001'
+  location: RGLocation
+  properties:{
+    sku:{
+      tier:'Standard_v2'
+    }
+    frontendIPConfigurations:[
+      {
+        name:'appGatewayFrontendConfig'
+        properties:{
+          privateIPAllocationMethod: 'Dynamic'
+          publicIPAddress:{
+            id:appGatewayPIP.id
+          }
+        }
+      }
+    ]
+    frontendPorts:[
+      {
+        name:'httpPort80'
+        properties:{
+          port:80
+        }
+      }
+    ]
+    gatewayIPConfigurations:[
+      {
+        name:'appGatewayIPConfig'
+        properties:{
+          subnet:{
+            id:AppGatewaySubnet.id
+          }
+        }
+      }
+    ]
+  }
+}
+*/
 

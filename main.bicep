@@ -1,6 +1,3 @@
-
-
-param RGName string
 param RGLocation string
 param CoreSecretsKeyVaultName string
 param RandString string
@@ -76,8 +73,8 @@ module peerings 'modules/peerings.bicep'={
   name:'peeringsDeployment'
   params:{
     RGLocation:RGLocation
-    AzureFirewallSubnetName:AzureFirewallSubnetName
-    firewallName:firewallName
+    //AzureFirewallSubnetName:AzureFirewallSubnetName
+    //firewallName:firewallName
     firewallPrivateIP:hub.outputs.firewallPrivateIP
   }
   dependsOn:[
