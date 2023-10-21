@@ -9,6 +9,12 @@ var AzureBastionSubnetName ='AzureBastionSubnet'
 var DefaultNSGName ='defaultNSG'
 var firewallName = 'firewall-hub-${RGLocation}-001'
 
+var coreVnetName = 'vnet-core-${RGLocation}-001'
+var devVnetName = 'vnet-dev-${RGLocation}-001'
+var hubVnetName = 'vnet-hub-${RGLocation}-001'
+var prodVnetName = 'vnet-prod-${RGLocation}-001'
+
+
 resource keyVault 'Microsoft.KeyVault/vaults@2023-02-01' existing = {
   name: CoreSecretsKeyVaultName
 }
@@ -19,6 +25,16 @@ resource defaultNSG 'Microsoft.Network/networkSecurityGroups@2023-05-01' ={
 resource routeTable 'Microsoft.Network/routeTables@2019-11-01' = {
   name: 'routetable-${RGLocation}-001'
   location: RGLocation
+}
+module coreServices 'modules/coreServices.bicep'={
+  name:'coreServicesDeployment'
+  params:{
+    coreVnetName :coreVnetName
+    devVnetName :devVnetName
+    hubVnetName :hubVnetName
+    prodVnetName :prodVnetName
+    RGLocation:RGLocation
+  }
 }
 module devSpoke 'modules/spoke.bicep'={
   name:'devSpokeDeployment'
@@ -31,7 +47,11 @@ module devSpoke 'modules/spoke.bicep'={
     adminPassword:keyVault.getSecret('SQLAdminPassword')
     defaultNSGName:defaultNSG.name
     routeTableName:routeTable.name
+    appServicePrivateDnsZoneName:coreServices.outputs.appServicePrivateDnsZoneName
+    sqlPrivateDnsZoneName:coreServices.outputs.sqlPrivateDnsZoneName
+    storageAccountPrivateDnsZoneName:coreServices.outputs.storageAccountPrivateDnsZoneName
   }
+  dependsOn:[coreServices]
 }
 module prodSpoke 'modules/spoke.bicep'={
   name:'prodSpokeDeployment'
@@ -44,7 +64,11 @@ module prodSpoke 'modules/spoke.bicep'={
     adminPassword:keyVault.getSecret('SQLAdminPassword')
     defaultNSGName:defaultNSG.name
     routeTableName:routeTable.name
+    appServicePrivateDnsZoneName:coreServices.outputs.appServicePrivateDnsZoneName
+    sqlPrivateDnsZoneName:coreServices.outputs.sqlPrivateDnsZoneName
+    storageAccountPrivateDnsZoneName:coreServices.outputs.storageAccountPrivateDnsZoneName
   }
+  dependsOn:[coreServices]
 }
 module hub 'modules/hub.bicep'={
   name:'hubDeployment'
@@ -57,6 +81,7 @@ module hub 'modules/hub.bicep'={
     AzureBastionSubnetName:AzureBastionSubnetName
     firewallName:firewallName
   }
+  dependsOn:[coreServices]
 }
 module core 'modules/core.bicep'={
   name:'coreDeployment'
@@ -68,6 +93,7 @@ module core 'modules/core.bicep'={
     defaultNSGName:defaultNSG.name
     routeTableName:routeTable.name
   }
+  dependsOn:[coreServices]
 }
 module peerings 'modules/peerings.bicep'={
   name:'peeringsDeployment'

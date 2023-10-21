@@ -12,6 +12,9 @@ param adminUsername string
 param adminPassword string
 param defaultNSGName string
 param routeTableName string
+param appServicePrivateDnsZoneName string 
+param sqlPrivateDnsZoneName string 
+param storageAccountPrivateDnsZoneName string
 
 var virtualNetworkName = 'vnet-${devOrProd}-${RGLocation}-001'
 var appServicePlanName = 'asp-${devOrProd}-${RGLocation}-001--${randString}'
@@ -188,19 +191,8 @@ resource storageAccountPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-
   }
 }
 //DNS Settings
-resource appServicePrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
-  name: 'privatelink.azurewebsites.net'
-  location: 'global'
-}
-resource appServicePrivateDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
-  name: '${appServicePrivateDnsZone.name}/link-${devOrProd}'
-  location: 'global'
-  properties: {
-    registrationEnabled: false
-    virtualNetwork: {
-      id: virtualNetwork.id
-    }
-  }
+resource appServicePrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' existing = {
+  name: appServicePrivateDnsZoneName
 }
 resource privateEndpointDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-05-01' = {
   name: '${appServicePrivateEndpoint.name}/dnsgroupname'
@@ -215,20 +207,8 @@ resource privateEndpointDnsZoneGroup 'Microsoft.Network/privateEndpoints/private
     ]
   }
 }
-
-resource sqlPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
-  name: 'privatelink.database.${environment().suffixes.sqlServerHostname}'
-  location: 'global'
-}
-resource sqlPrivateDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
-  name: '${sqlPrivateDnsZone.name}/link-${devOrProd}'
-  location: 'global'
-  properties: {
-    registrationEnabled: false
-    virtualNetwork: {
-      id: virtualNetwork.id
-    }
-  }
+resource sqlPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' existing = {
+  name: sqlPrivateDnsZoneName
 }
 resource sqlPrivateDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-05-01' = {
   name: '${sqlServerPrivateEndpoint.name}/dnsgroupname'
@@ -243,19 +223,8 @@ resource sqlPrivateDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZo
     ]
   }
 }
-resource storageAccountPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = if (devOrProd == 'prod') {
-  name: 'privatelink.blob.${environment().suffixes.storage}'
-  location: 'global'
-}
-resource storageAccountPrivateDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = if (devOrProd == 'prod') {
-  name: '${storageAccountPrivateDnsZone.name}/link-${devOrProd}'
-  location: 'global'
-  properties: {
-    registrationEnabled: false
-    virtualNetwork: {
-      id: virtualNetwork.id
-    }
-  }
+resource storageAccountPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' existing = {
+  name: storageAccountPrivateDnsZoneName
 }
 resource storageAccountPrivateDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-05-01' = if (devOrProd == 'prod') {
   name: '${storageAccountPrivateEndpoint.name}/dnsgroupname'
