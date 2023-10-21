@@ -187,6 +187,90 @@ resource storageAccountPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-
   }]
   }
 }
+//DNS Settings
+resource appServicePrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
+  name: 'privatelink.azurewebsites.net'
+  location: 'global'
+}
+resource appServicePrivateDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
+  name: '${appServicePrivateDnsZone.name}/link-${devOrProd}'
+  location: 'global'
+  properties: {
+    registrationEnabled: false
+    virtualNetwork: {
+      id: virtualNetwork.id
+    }
+  }
+}
+resource privateEndpointDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-05-01' = {
+  name: '${appServicePrivateEndpoint.name}/dnsgroupname'
+  properties: {
+    privateDnsZoneConfigs: [
+      {
+        name: 'config1'
+        properties: {
+          privateDnsZoneId: appServicePrivateDnsZone.id
+        }
+      }
+    ]
+  }
+}
+
+resource sqlPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
+  name: 'privatelink.database.${environment().suffixes.sqlServerHostname}'
+  location: 'global'
+}
+resource sqlPrivateDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
+  name: '${sqlPrivateDnsZone.name}/link-${devOrProd}'
+  location: 'global'
+  properties: {
+    registrationEnabled: false
+    virtualNetwork: {
+      id: virtualNetwork.id
+    }
+  }
+}
+resource sqlPrivateDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-05-01' = {
+  name: '${sqlServerPrivateEndpoint.name}/dnsgroupname'
+  properties: {
+    privateDnsZoneConfigs: [
+      {
+        name: 'config1'
+        properties: {
+          privateDnsZoneId: sqlPrivateDnsZone.id
+        }
+      }
+    ]
+  }
+}
+resource storageAccountPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = if (devOrProd == 'prod') {
+  name: 'privatelink.blob.${environment().suffixes.storage}'
+  location: 'global'
+}
+resource storageAccountPrivateDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = if (devOrProd == 'prod') {
+  name: '${storageAccountPrivateDnsZone.name}/link-${devOrProd}'
+  location: 'global'
+  properties: {
+    registrationEnabled: false
+    virtualNetwork: {
+      id: virtualNetwork.id
+    }
+  }
+}
+resource storageAccountPrivateDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-05-01' = if (devOrProd == 'prod') {
+  name: '${storageAccountPrivateEndpoint.name}/dnsgroupname'
+  properties: {
+    privateDnsZoneConfigs: [
+      {
+        name: 'config1'
+        properties: {
+          privateDnsZoneId: storageAccountPrivateDnsZone.id
+        }
+      }
+    ]
+  }
+}
+
 //SQLAudit https://learn.microsoft.com/en-us/azure/templates/microsoft.sql/servers/auditingsettings?pivots=deployment-language-bicep
 //https://learn.microsoft.com/en-us/sql/relational-databases/security/auditing/sql-server-audit-database-engine?view=sql-server-ver16
 //https://learn.microsoft.com/en-us/azure/azure-sql/database/auditing-overview?view=azuresql
