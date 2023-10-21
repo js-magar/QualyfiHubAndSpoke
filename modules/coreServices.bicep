@@ -7,18 +7,46 @@ param RGLocation string
 resource coreVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
   name: coreVnetName
   location: RGLocation
+  properties: {
+    addressSpace: {
+      addressPrefixes: [
+        '10.20.0.0/16'
+      ]
+    }
+  }
 }
 resource devVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
   name: devVnetName
   location: RGLocation
+  properties: {
+    addressSpace: {
+      addressPrefixes: [
+        '10.30.0.0/16'
+      ]
+    }
+  }
 }
 resource hubVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
   name: hubVnetName
   location: RGLocation
+  properties: {
+    addressSpace: {
+      addressPrefixes: [
+        '10.10.0.0/16'
+      ]
+    }
+  }
 }
 resource prodVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
   name: prodVnetName
   location: RGLocation
+  properties: {
+    addressSpace: {
+      addressPrefixes: [
+        '10.31.0.0/16'
+      ]
+    }
+  }
 }
 //DNS Zones
 resource appServicePrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
@@ -26,7 +54,7 @@ resource appServicePrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01'
   location: 'global'
 }
 resource sqlPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
-  name: 'privatelink.database.${environment().suffixes.sqlServerHostname}'
+  name: 'privatelink${environment().suffixes.sqlServerHostname}'
   location: 'global'
 }
 resource storageAccountPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
@@ -51,7 +79,7 @@ resource CoreAppServiceLink 'Microsoft.Network/privateDnsZones/virtualNetworkLin
   }
 }
 resource CoreSQLLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
-  name: '${appServicePrivateDnsZone.name}/link-core'
+  name: '${sqlPrivateDnsZone.name}/link-core'
   location: 'global'
   properties: {
     registrationEnabled: false
@@ -61,7 +89,7 @@ resource CoreSQLLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020
   }
 }
 resource CoreStorageAccountLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
-  name: '${appServicePrivateDnsZone.name}/link-core'
+  name: '${storageAccountPrivateDnsZone.name}/link-core'
   location: 'global'
   properties: {
     registrationEnabled: false
@@ -82,7 +110,7 @@ resource DevAppServiceLink 'Microsoft.Network/privateDnsZones/virtualNetworkLink
   }
 }
 resource DevSQLLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
-  name: '${appServicePrivateDnsZone.name}/link-dev'
+  name: '${sqlPrivateDnsZone.name}/link-dev'
   location: 'global'
   properties: {
     registrationEnabled: false
@@ -103,7 +131,7 @@ resource HubAppServiceLink 'Microsoft.Network/privateDnsZones/virtualNetworkLink
   }
 }
 resource HubSQLLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
-  name: '${appServicePrivateDnsZone.name}/link-hub'
+  name: '${sqlPrivateDnsZone.name}/link-hub'
   location: 'global'
   properties: {
     registrationEnabled: false
@@ -113,7 +141,7 @@ resource HubSQLLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-
   }
 }
 resource HubStorageAccountLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
-  name: '${appServicePrivateDnsZone.name}/link-hub'
+  name: '${storageAccountPrivateDnsZone.name}/link-hub'
   location: 'global'
   properties: {
     registrationEnabled: false
@@ -134,7 +162,7 @@ resource ProdAppServiceLink 'Microsoft.Network/privateDnsZones/virtualNetworkLin
   }
 }
 resource ProdSQLLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
-  name: '${appServicePrivateDnsZone.name}/link-prod'
+  name: '${sqlPrivateDnsZone.name}/link-prod'
   location: 'global'
   properties: {
     registrationEnabled: false
@@ -144,7 +172,7 @@ resource ProdSQLLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020
   }
 }
 resource ProdStorageAccountLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
-  name: '${appServicePrivateDnsZone.name}/link-prod'
+  name: '${storageAccountPrivateDnsZone.name}/link-prod'
   location: 'global'
   properties: {
     registrationEnabled: false
