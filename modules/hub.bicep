@@ -237,7 +237,7 @@ resource appGateway 'Microsoft.Network/applicationGateways@2023-05-01' = {
           ruleType:'Basic'
           priority:110
           httpListener:{
-            id:'${appgw_id}/httpListerners/appGWHttpListener'
+            id:'${appgw_id}/httpListeners/appGWHttpListener'
           }
           backendAddressPool:{
             id:'${appgw_id}/backendAddressPools/backendAddressPool'
@@ -250,7 +250,12 @@ resource appGateway 'Microsoft.Network/applicationGateways@2023-05-01' = {
       }
     ]
     sku:{
+      name:'Standard_v2'
       tier:'Standard_v2'
+    }
+    autoscaleConfiguration:{
+      minCapacity:1
+      maxCapacity:3
     }
   }
 }
