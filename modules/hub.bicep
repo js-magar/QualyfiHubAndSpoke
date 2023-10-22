@@ -165,9 +165,16 @@ resource appGateway 'Microsoft.Network/applicationGateways@2023-05-01' = {
   name: 'appGateway-hub-${RGLocation}-001'
   location: RGLocation
   properties:{
-    sku:{
-      tier:'Standard_v2'
-    }
+    backendAddressPools:[
+      {
+        name:'backendAddressPool'
+        properties:{
+          backendAddresses:[{
+            fqdn:''
+          }]
+        }
+      }
+    ]
     frontendIPConfigurations:[
       {
         name:'appGatewayFrontendConfig'
@@ -197,6 +204,9 @@ resource appGateway 'Microsoft.Network/applicationGateways@2023-05-01' = {
         }
       }
     ]
+    sku:{
+      tier:'Standard_v2'
+    }
   }
 }
 */
