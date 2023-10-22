@@ -7,6 +7,7 @@ param AppgwSubnetName string
 param AzureFirewallSubnetName string
 param AzureBastionSubnetName string
 param firewallName string
+param prodAppServiceName string
 
 
 var virtualNetworkName = 'vnet-hub-${RGLocation}-001'
@@ -14,6 +15,7 @@ var GatewaySubnetAddressPrefix ='1'
 var AppgwSubnetAddressPrefix ='2'
 var AzureFirewallSubnetAddressPrefix ='3'
 var AzureBastionSubnetAddressPrefix ='4'
+var appgw_id = resourceId('Microsoft.Network/applicationGateways','appGateway-hub-${RGLocation}-001')
 
 resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-05-01' = {
   name: virtualNetworkName
@@ -160,7 +162,7 @@ resource appGatewayPIP 'Microsoft.Network/publicIPAddresses@2023-05-01' = {
     publicIPAllocationMethod: 'Static'
   }
 }
-/*
+
 resource appGateway 'Microsoft.Network/applicationGateways@2023-05-01' = {
   name: 'appGateway-hub-${RGLocation}-001'
   location: RGLocation
@@ -170,8 +172,18 @@ resource appGateway 'Microsoft.Network/applicationGateways@2023-05-01' = {
         name:'backendAddressPool'
         properties:{
           backendAddresses:[{
-            fqdn:''
+            fqdn:'${prodAppServiceName}.privatelink.azurewebsites.net'
           }]
+        }
+      }
+    ]
+    backendHttpSettingsCollection:[
+      {
+        name:'backendHttpPort80'
+        properties:{
+          port:80
+          protocol:'Http'
+          pickHostNameFromBackendAddress:true
         }
       }
     ]
@@ -188,7 +200,7 @@ resource appGateway 'Microsoft.Network/applicationGateways@2023-05-01' = {
     ]
     frontendPorts:[
       {
-        name:'httpPort80'
+        name:'frontendHttpPort80'
         properties:{
           port:80
         }
@@ -204,10 +216,43 @@ resource appGateway 'Microsoft.Network/applicationGateways@2023-05-01' = {
         }
       }
     ]
+    httpListeners:[
+      {
+          name:'appGWHttpListener'
+          properties:{
+            frontendIPConfiguration:{
+              id:'${appgw_id}/frontendIPConfigurations/appGatewayFrontendConfig'
+            }
+            frontendPort:{
+              id:'${appgw_id}/frontendPorts/frontendHttpPort80'
+            }
+            protocol:'Http'
+          }
+      }
+    ]
+    requestRoutingRules:[
+      {
+        name:'appGWRoutingRule'
+        properties:{
+          ruleType:'Basic'
+          priority:110
+          httpListener:{
+            id:'${appgw_id}/httpListerners/appGWHttpListener'
+          }
+          backendAddressPool:{
+            id:'${appgw_id}/backendAddressPools/backendAddressPool'
+          }
+          backendHttpSettings:{
+            id:'${appgw_id}/backendHttpSettingsCollection/backendHttpPort80'
+          }
+
+        }
+      }
+    ]
     sku:{
       tier:'Standard_v2'
     }
   }
 }
-*/
+
 

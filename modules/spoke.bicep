@@ -15,11 +15,11 @@ param routeTableName string
 param appServicePrivateDnsZoneName string 
 param sqlPrivateDnsZoneName string 
 param storageAccountPrivateDnsZoneName string
+param appServicePlanName string
+param appServiceName string
 
 var virtualNetworkName = 'vnet-${devOrProd}-${RGLocation}-001'
-var appServicePlanName = 'asp-${devOrProd}-${RGLocation}-001-${randString}'
 var appServicePlanSku = 'B1'
-var appServiceName = 'as-${devOrProd}-${RGLocation}-001-${randString}'
 var appServiceSubnetName ='AppSubnet'
 var SQLServerName = 'sql-${devOrProd}-${RGLocation}-001-${randString}'
 var SQLServerSku = 'Basic'

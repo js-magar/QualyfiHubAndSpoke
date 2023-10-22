@@ -14,6 +14,11 @@ var devVnetName = 'vnet-dev-${RGLocation}-001'
 var hubVnetName = 'vnet-hub-${RGLocation}-001'
 var prodVnetName = 'vnet-prod-${RGLocation}-001'
 
+var devAppServicePlanName = 'asp-dev-${RGLocation}-001-${RandString}'
+var devAppServiceName = 'as-dev-${RGLocation}-001-${RandString}'
+var prodAppServicePlanName = 'asp-prod-${RGLocation}-001-${RandString}'
+var prodAppServiceName = 'as-prod-${RGLocation}-001-${RandString}'
+
 
 resource keyVault 'Microsoft.KeyVault/vaults@2023-02-01' existing = {
   name: CoreSecretsKeyVaultName
@@ -50,6 +55,8 @@ module devSpoke 'modules/spoke.bicep'={
     appServicePrivateDnsZoneName:coreServices.outputs.appServicePrivateDnsZoneName
     sqlPrivateDnsZoneName:coreServices.outputs.sqlPrivateDnsZoneName
     storageAccountPrivateDnsZoneName:coreServices.outputs.storageAccountPrivateDnsZoneName
+    appServiceName:devAppServiceName
+    appServicePlanName:devAppServicePlanName
   }
   dependsOn:[coreServices]
 }
@@ -67,6 +74,8 @@ module prodSpoke 'modules/spoke.bicep'={
     appServicePrivateDnsZoneName:coreServices.outputs.appServicePrivateDnsZoneName
     sqlPrivateDnsZoneName:coreServices.outputs.sqlPrivateDnsZoneName
     storageAccountPrivateDnsZoneName:coreServices.outputs.storageAccountPrivateDnsZoneName
+    appServiceName:prodAppServiceName
+    appServicePlanName:prodAppServicePlanName
   }
   dependsOn:[coreServices]
 }
@@ -80,8 +89,11 @@ module hub 'modules/hub.bicep'={
     AzureFirewallSubnetName:AzureFirewallSubnetName
     AzureBastionSubnetName:AzureBastionSubnetName
     firewallName:firewallName
+    prodAppServiceName:prodAppServiceName
   }
-  dependsOn:[coreServices]
+  dependsOn:[coreServices
+    prodSpoke]
+  
 }
 module core 'modules/core.bicep'={
   name:'coreDeployment'
