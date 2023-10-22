@@ -2,7 +2,18 @@ param coreVnetName string
 param devVnetName string
 param hubVnetName string
 param prodVnetName string
+param logAnalyticsWorkspaceName string
 param RGLocation string
+
+resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
+  name:logAnalyticsWorkspaceName
+  location:RGLocation
+  properties:{
+    features:{
+      enableLogAccessUsingOnlyResourcePermissions:true
+    }
+  }
+}
 //Get VNets
 resource coreVnet 'Microsoft.Network/virtualNetworks@2023-05-01' = {
   name: coreVnetName

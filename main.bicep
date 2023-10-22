@@ -18,6 +18,7 @@ var devAppServicePlanName = 'asp-dev-${RGLocation}-001-${RandString}'
 var devAppServiceName = 'as-dev-${RGLocation}-001-${RandString}'
 var prodAppServicePlanName = 'asp-prod-${RGLocation}-001-${RandString}'
 var prodAppServiceName = 'as-prod-${RGLocation}-001-${RandString}'
+var logAnalyticsWorkspaceName = 'logAnalyticsWorkspace'
 
 
 resource keyVault 'Microsoft.KeyVault/vaults@2023-02-01' existing = {
@@ -39,6 +40,7 @@ module coreServices 'modules/coreServices.bicep'={
     hubVnetName :hubVnetName
     prodVnetName :prodVnetName
     RGLocation:RGLocation
+    logAnalyticsWorkspaceName:logAnalyticsWorkspaceName
   }
 }
 module devSpoke 'modules/spoke.bicep'={
@@ -57,6 +59,7 @@ module devSpoke 'modules/spoke.bicep'={
     storageAccountPrivateDnsZoneName:coreServices.outputs.storageAccountPrivateDnsZoneName
     appServiceName:devAppServiceName
     appServicePlanName:devAppServicePlanName
+    logAnalyticsWorkspaceName:logAnalyticsWorkspaceName
   }
   dependsOn:[coreServices]
 }
@@ -76,6 +79,7 @@ module prodSpoke 'modules/spoke.bicep'={
     storageAccountPrivateDnsZoneName:coreServices.outputs.storageAccountPrivateDnsZoneName
     appServiceName:prodAppServiceName
     appServicePlanName:prodAppServicePlanName
+    logAnalyticsWorkspaceName:logAnalyticsWorkspaceName
   }
   dependsOn:[coreServices]
 }
@@ -90,6 +94,7 @@ module hub 'modules/hub.bicep'={
     AzureBastionSubnetName:AzureBastionSubnetName
     firewallName:firewallName
     prodAppServiceName:prodAppServiceName
+    logAnalyticsWorkspaceName:logAnalyticsWorkspaceName
   }
   dependsOn:[coreServices
     prodSpoke]
@@ -104,6 +109,7 @@ module core 'modules/core.bicep'={
     adminPassword:keyVault.getSecret('VMAdminPassword')
     defaultNSGName:defaultNSG.name
     routeTableName:routeTable.name
+    logAnalyticsWorkspaceName:logAnalyticsWorkspaceName
   }
   dependsOn:[coreServices]
 }

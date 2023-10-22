@@ -8,6 +8,7 @@ param adminUsername string
 param adminPassword string
 param defaultNSGName string
 param routeTableName string
+param logAnalyticsWorkspaceName string
 
 var virtualNetworkName = 'vnet-core-${RGLocation}-001'
 
@@ -15,7 +16,6 @@ resource defaultNSG 'Microsoft.Network/networkSecurityGroups@2023-05-01' existin
   name: defaultNSGName
 }
 resource routeTable 'Microsoft.Network/routeTables@2019-11-01' existing = {name: routeTableName}
-
 resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-05-01' = {
   name: virtualNetworkName
   location: RGLocation
@@ -46,7 +46,6 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-05-01' = {
   }
 }
 resource VMSubnet 'Microsoft.Network/virtualNetworks/subnets@2023-05-01' existing = {name: 'VMSubnet',parent: virtualNetwork}
-
 resource VMNetworkInterface 'Microsoft.Network/networkInterfaces@2020-11-01' = {
   name: 'nic-core-${RGLocation}-001'
   location: RGLocation
@@ -106,4 +105,53 @@ resource windowsVM 'Microsoft.Compute/virtualMachines@2020-12-01' = {
     }
   }
 }
+resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' existing = {
+  name:logAnalyticsWorkspaceName
+}
+resource vmDAExtension 'Microsoft.Compute/virtualMachines/extensions@2023-07-01' = {
+  parent:windowsVM
+  name:'vmDependancyAgent'
+  location:RGLocation
+  properties:{
+    publisher: 'Microsoft.Azure.Monitoring.DependencyAgent'
+    type:'MicrosoftMonitoringAgent'
+    typeHandlerVersion: '9.5'
+    autoUpgradeMinorVersion: true
+  }
+}
+resource vmMMAExtension 'Microsoft.Compute/virtualMachines/extensions@2023-07-01' ={
+  parent:windowsVM
+  name:'vmMMAExtension'
+  location:RGLocation
+  properties:{
+    publisher: 'Microsoft.EnterpriseCloud.Monitoring'
+    type:'MicrosoftMonitoringAgent'
+    typeHandlerVersion:'1.0'
+    autoUpgradeMinorVersion: true
+    settings: {
+      workspaceId: reference(logAnalyticsWorkspace.id, '2022-10-01').customerId
+      azureResourceId: windowsVM.id
+      stopOnMultipleConnections: true
+    }
+    protectedSettings: {
+      workspaceKey: listKeys(logAnalyticsWorkspace.id, '2022-10-01').primarySharedKey
+    }
+  }
+}
+resource solution 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = {
+  location: RGLocation
+  name: 'VMInsights(${split(logAnalyticsWorkspace.id, '/')[8]})'
+  properties: {
+    workspaceResourceId: logAnalyticsWorkspace.id
+  }
+  plan: {
+    name: 'VMInsights(${split(logAnalyticsWorkspace.id, '/')[8]})'
+    product: 'OMSGallery/VMInsights'
+    promotionCode: ''
+    publisher: 'Microsoft'
+  }
+}
+//Key Vault
+
+
 

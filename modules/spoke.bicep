@@ -17,6 +17,7 @@ param sqlPrivateDnsZoneName string
 param storageAccountPrivateDnsZoneName string
 param appServicePlanName string
 param appServiceName string
+param logAnalyticsWorkspaceName string
 
 var virtualNetworkName = 'vnet-${devOrProd}-${RGLocation}-001'
 var appServicePlanSku = 'B1'
@@ -60,6 +61,9 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-05-01' = {
       }
     ]
   }
+}
+resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' existing = {
+  name:logAnalyticsWorkspaceName
 }
 
 resource storageAccountSubnet 'Microsoft.Network/virtualNetworks/subnets@2021-03-01' = if (devOrProd == 'prod') {
@@ -121,6 +125,35 @@ resource appServicePrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-05-0
           ]
         }
   }]
+  }
+}
+resource appServiceDiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = if (devOrProd == 'prod') {
+  name: 'prodAppServiceDiagnosticSettings'
+  scope: appService
+  properties: {
+    logs: [
+      {
+        category: ''
+        categoryGroup: 'allLogs'
+        enabled: true
+      }
+    ]
+    metrics: [
+      {
+        category: 'allMertics'
+        enabled: true
+      }
+    ]
+    workspaceId: logAnalyticsWorkspace.id
+  }
+}
+resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
+  name:'appServiceInsights'
+  location:RGLocation
+  kind:'web'
+  properties: {
+    Application_Type: 'web'
+    WorkspaceResourceId: logAnalyticsWorkspace.id
   }
 }
 //SQL
