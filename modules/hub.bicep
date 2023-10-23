@@ -164,7 +164,7 @@ resource firewallDiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-
     ]
     metrics: [
       {
-        category: 'allMertics'
+        category: 'AllMetrics'
         enabled: true
       }
     ]

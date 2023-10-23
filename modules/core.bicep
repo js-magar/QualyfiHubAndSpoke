@@ -114,7 +114,7 @@ resource vmDAExtension 'Microsoft.Compute/virtualMachines/extensions@2023-07-01'
   location:RGLocation
   properties:{
     publisher: 'Microsoft.Azure.Monitoring.DependencyAgent'
-    type:'MicrosoftMonitoringAgent'
+    type:'DependencyAgentWindows'
     typeHandlerVersion: '9.5'
     autoUpgradeMinorVersion: true
   }

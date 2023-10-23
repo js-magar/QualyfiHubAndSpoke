@@ -140,7 +140,7 @@ resource appServiceDiagnosticSettings 'Microsoft.Insights/diagnosticSettings@202
     ]
     metrics: [
       {
-        category: 'allMertics'
+        category: 'AllMetrics'
         enabled: true
       }
     ]
