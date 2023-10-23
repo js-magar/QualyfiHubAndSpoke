@@ -3,8 +3,18 @@ param devVnetName string
 param hubVnetName string
 param prodVnetName string
 param logAnalyticsWorkspaceName string
+param recoveryServiceVaultName string
 param RGLocation string
 
+//RSV
+resource recoveryServiceVaults 'Microsoft.RecoveryServices/vaults@2023-06-01'={
+  name:recoveryServiceVaultName
+  location:RGLocation
+  sku:{
+    name:'Standard'
+  }
+}
+//LAW
 resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
   name:logAnalyticsWorkspaceName
   location:RGLocation

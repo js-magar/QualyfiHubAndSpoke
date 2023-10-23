@@ -18,7 +18,8 @@ var devAppServicePlanName = 'asp-dev-${RGLocation}-001-${RandString}'
 var devAppServiceName = 'as-dev-${RGLocation}-001-${RandString}'
 var prodAppServicePlanName = 'asp-prod-${RGLocation}-001-${RandString}'
 var prodAppServiceName = 'as-prod-${RGLocation}-001-${RandString}'
-var logAnalyticsWorkspaceName = 'logAnalyticsWorkspace'
+var logAnalyticsWorkspaceName = 'log-core-${RGLocation}-001-${RandString}'
+var recoveryServiceVaultName = 'rsv-core-${RGLocation}-001'
 
 
 resource keyVault 'Microsoft.KeyVault/vaults@2023-02-01' existing = {
@@ -41,6 +42,7 @@ module coreServices 'modules/coreServices.bicep'={
     prodVnetName :prodVnetName
     RGLocation:RGLocation
     logAnalyticsWorkspaceName:logAnalyticsWorkspaceName
+    recoveryServiceVaultName:recoveryServiceVaultName
   }
 }
 module devSpoke 'modules/spoke.bicep'={
@@ -110,6 +112,7 @@ module core 'modules/core.bicep'={
     defaultNSGName:defaultNSG.name
     routeTableName:routeTable.name
     logAnalyticsWorkspaceName:logAnalyticsWorkspaceName
+    recoveryServiceVaultName:recoveryServiceVaultName
   }
   dependsOn:[coreServices]
 }

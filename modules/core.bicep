@@ -9,8 +9,14 @@ param adminPassword string
 param defaultNSGName string
 param routeTableName string
 param logAnalyticsWorkspaceName string
+param recoveryServiceVaultName string
 
 var virtualNetworkName = 'vnet-core-${RGLocation}-001'
+var vmName ='vm-core-${RGLocation}-001'
+var backupFabric = 'Azure'
+var v2VmType = 'Microsoft.Compute/virtualMachines'
+var v2VmContainer = 'iaasvmcontainer;iaasvmcontainerv2;'
+var v2Vm = 'vm;iaasvmcontainerv2;'
 
 resource defaultNSG 'Microsoft.Network/networkSecurityGroups@2023-05-01' existing ={
   name: defaultNSGName
@@ -66,7 +72,7 @@ resource VMNetworkInterface 'Microsoft.Network/networkInterfaces@2020-11-01' = {
   }
 }
 resource windowsVM 'Microsoft.Compute/virtualMachines@2020-12-01' = {
-  name: 'vm-core-${RGLocation}-001'
+  name: vmName
   location: RGLocation
   properties: {
     hardwareProfile: {
@@ -151,6 +157,20 @@ resource solution 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' 
     publisher: 'Microsoft'
   }
 }
+resource recoveryServiceVaults 'Microsoft.RecoveryServices/vaults@2023-06-01'existing = {
+  name:recoveryServiceVaultName
+}
+//https://github.com/Azure/azure-quickstart-templates/blob/master/quickstarts/microsoft.recoveryservices/recovery-services-backup-vms/main.bicep#L20
+resource windowsVMBackup 'Microsoft.RecoveryServices/vaults/backupFabrics/protectionContainers/protectedItems@2023-04-01' ={
+  name:'${recoveryServiceVaultName}/${backupFabric}/${v2VmContainer}${resourceGroup().name};${vmName}/${v2Vm}${resourceGroup().name};${vmName}'
+  location: RGLocation
+  properties: {
+    protectedItemType: v2VmType
+    policyId: '${recoveryServiceVaults.id}/backupPolicies/DefaultPolicy'
+    sourceResourceId: windowsVM.id
+  }
+}
+
 //Key Vault
 
 
