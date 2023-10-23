@@ -195,7 +195,7 @@ resource appGateway 'Microsoft.Network/applicationGateways@2023-05-01' = {
         name:'backendAddressPool'
         properties:{
           backendAddresses:[{
-            fqdn:'${prodAppServiceName}.privatelink.azurewebsites.net'
+            fqdn:'${prodAppServiceName}.azurewebsites.net'
           }]
         }
       }
