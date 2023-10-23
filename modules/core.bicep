@@ -125,7 +125,6 @@ resource vmDAExtension 'Microsoft.Compute/virtualMachines/extensions@2023-07-01'
     autoUpgradeMinorVersion: true
   }
 }
-//Change to AMA
 resource vmAMAExtension 'Microsoft.Compute/virtualMachines/extensions@2023-07-01' ={
   parent:windowsVM
   name:'AzureMonitorWindowsAgent'
