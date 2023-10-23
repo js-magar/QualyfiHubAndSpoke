@@ -10,7 +10,11 @@ param RGLocation string
 resource recoveryServiceVaults 'Microsoft.RecoveryServices/vaults@2023-06-01'={
   name:recoveryServiceVaultName
   location:RGLocation
+  properties:{
+    publicNetworkAccess:'Disabled'
+  }
   sku:{
+    tier:'Standard'
     name:'Standard'
   }
 }

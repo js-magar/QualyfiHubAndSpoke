@@ -125,9 +125,10 @@ resource vmDAExtension 'Microsoft.Compute/virtualMachines/extensions@2023-07-01'
     autoUpgradeMinorVersion: true
   }
 }
-resource vmMMAExtension 'Microsoft.Compute/virtualMachines/extensions@2023-07-01' ={
+//Change to AMA
+resource vmAMAExtension 'Microsoft.Compute/virtualMachines/extensions@2023-07-01' ={
   parent:windowsVM
-  name:'vmMMAExtension'
+  name:'AzureMonitorWindowsAgent'
   location:RGLocation
   properties:{
     publisher: 'Microsoft.EnterpriseCloud.Monitoring'
@@ -163,7 +164,6 @@ resource recoveryServiceVaults 'Microsoft.RecoveryServices/vaults@2023-06-01'exi
 //https://github.com/Azure/azure-quickstart-templates/blob/master/quickstarts/microsoft.recoveryservices/recovery-services-backup-vms/main.bicep#L20
 resource windowsVMBackup 'Microsoft.RecoveryServices/vaults/backupFabrics/protectionContainers/protectedItems@2023-04-01' ={
   name:'${recoveryServiceVaultName}/${backupFabric}/${v2VmContainer}${resourceGroup().name};${vmName}/${v2Vm}${resourceGroup().name};${vmName}'
-  location: RGLocation
   properties: {
     protectedItemType: v2VmType
     policyId: '${recoveryServiceVaults.id}/backupPolicies/DefaultPolicy'
