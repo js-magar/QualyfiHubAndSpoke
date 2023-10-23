@@ -131,18 +131,11 @@ resource vmAMAExtension 'Microsoft.Compute/virtualMachines/extensions@2023-07-01
   name:'AzureMonitorWindowsAgent'
   location:RGLocation
   properties:{
-    publisher: 'Microsoft.EnterpriseCloud.Monitoring'
-    type:'MicrosoftMonitoringAgent'
+    publisher: 'Microsoft.Azure.Monitor'
+    type:'AzureMonitorWindowsAgent'
     typeHandlerVersion:'1.0'
     autoUpgradeMinorVersion: true
-    settings: {
-      workspaceId: reference(logAnalyticsWorkspace.id, '2022-10-01').customerId
-      azureResourceId: windowsVM.id
-      stopOnMultipleConnections: true
-    }
-    protectedSettings: {
-      workspaceKey: listKeys(logAnalyticsWorkspace.id, '2022-10-01').primarySharedKey
-    }
+    enableAutomaticUpgrade: true
   }
 }
 resource solution 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = {
