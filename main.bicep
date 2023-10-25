@@ -113,6 +113,7 @@ module core 'modules/core.bicep'={
     routeTableName:routeTable.name
     logAnalyticsWorkspaceName:logAnalyticsWorkspaceName
     recoveryServiceVaultName:recoveryServiceVaultName
+    randString:RandString
   }
   dependsOn:[coreServices]
 }

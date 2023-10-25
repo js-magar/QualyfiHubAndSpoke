@@ -10,6 +10,7 @@ param defaultNSGName string
 param routeTableName string
 param logAnalyticsWorkspaceName string
 param recoveryServiceVaultName string
+param randString string
 
 var virtualNetworkName = 'vnet-core-${RGLocation}-001'
 var vmName ='vm-core-${RGLocation}-001'
@@ -95,6 +96,9 @@ resource windowsVM 'Microsoft.Compute/virtualMachines@2020-12-01' = {
         name: 'name'
         caching: 'ReadWrite'
         createOption: 'FromImage'
+        managedDisk:{
+          storageAccountType:'Standard_LRS'
+        }
       }
     }
     networkProfile: {
@@ -162,8 +166,47 @@ resource windowsVMBackup 'Microsoft.RecoveryServices/vaults/backupFabrics/protec
     sourceResourceId: windowsVM.id
   }
 }
-
 //Key Vault
+resource encryptionKeyVault 'Microsoft.KeyVault/vaults@2023-02-01'={
+  name:'kv-encrypt-core-${randString}'
+  location:RGLocation
+  properties:{
+    accessPolicies:[]
+    enableRbacAuthorization: false
+    enabledForDeployment: true
+    enabledForDiskEncryption: true
+    enabledForTemplateDeployment: true
+    networkAcls:{
+      defaultAction:'Allow'
+      bypass:'AzureServices'
+    }
+    sku:{
+      family:'A'
+      name:'standard'
+    }
+    tenantId:subscription().tenantId
+  }
+}
+
+resource DiskEncryption 'Microsoft.Compute/virtualMachines/extensions@2023-07-01' = {
+  parent: windowsVM
+  name: 'AzureDiskEncryption'
+  location: RGLocation
+  properties: {
+    publisher: 'Microsoft.Azure.Security'
+    type: 'AzureDiskEncryption'
+    typeHandlerVersion: '2.2'
+    autoUpgradeMinorVersion: true
+    forceUpdateTag: '1.0'
+    settings: {
+      EncryptionOperation: 'EnableEncryption'
+      KeyVaultURL: encryptionKeyVault.properties.vaultUri
+      KeyVaultResourceId: encryptionKeyVault.id
+      VolumeType: 'All'
+      ResizeOSDisk: false
+    }
+  }
+}
 
 
 
