@@ -1,4 +1,5 @@
 param RGLocation string
+@secure()
 param CoreSecretsKeyVaultName string
 param RandString string
 
@@ -114,6 +115,7 @@ module core 'modules/core.bicep'={
     logAnalyticsWorkspaceName:logAnalyticsWorkspaceName
     recoveryServiceVaultName:recoveryServiceVaultName
     randString:RandString
+    keyVaultPrivateDnsZoneName:coreServices.outputs.encryptKVPrivateDnsZoneName
   }
   dependsOn:[coreServices]
 }

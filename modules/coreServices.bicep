@@ -86,15 +86,21 @@ resource storageAccountPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06
   name: 'privatelink.blob.${environment().suffixes.storage}'
   location: 'global'
 }
+resource encryptKVPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
+  name: 'privatelink${environment().suffixes.keyvaultDns}'
+  location: 'global'
+}
 //
 //output DNS Zone names
 output appServicePrivateDnsZoneName string = appServicePrivateDnsZone.name
 output sqlPrivateDnsZoneName string = sqlPrivateDnsZone.name
 output storageAccountPrivateDnsZoneName string = storageAccountPrivateDnsZone.name
+output encryptKVPrivateDnsZoneName string = encryptKVPrivateDnsZone.name
 //DNS Links
 //core
 resource CoreAppServiceLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
-  name: '${appServicePrivateDnsZone.name}/link-core'
+  parent: appServicePrivateDnsZone
+  name: 'link-core'
   location: 'global'
   properties: {
     registrationEnabled: false
@@ -104,7 +110,8 @@ resource CoreAppServiceLink 'Microsoft.Network/privateDnsZones/virtualNetworkLin
   }
 }
 resource CoreSQLLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
-  name: '${sqlPrivateDnsZone.name}/link-core'
+  parent: sqlPrivateDnsZone
+  name: 'link-core'
   location: 'global'
   properties: {
     registrationEnabled: false
@@ -114,7 +121,8 @@ resource CoreSQLLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020
   }
 }
 resource CoreStorageAccountLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
-  name: '${storageAccountPrivateDnsZone.name}/link-core'
+  parent: storageAccountPrivateDnsZone
+  name: 'link-core'
   location: 'global'
   properties: {
     registrationEnabled: false
@@ -125,7 +133,8 @@ resource CoreStorageAccountLink 'Microsoft.Network/privateDnsZones/virtualNetwor
 }
 //dev
 resource DevAppServiceLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
-  name: '${appServicePrivateDnsZone.name}/link-dev'
+  parent: appServicePrivateDnsZone
+  name: 'link-dev'
   location: 'global'
   properties: {
     registrationEnabled: false
@@ -135,7 +144,8 @@ resource DevAppServiceLink 'Microsoft.Network/privateDnsZones/virtualNetworkLink
   }
 }
 resource DevSQLLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
-  name: '${sqlPrivateDnsZone.name}/link-dev'
+  parent: sqlPrivateDnsZone
+  name: 'link-dev'
   location: 'global'
   properties: {
     registrationEnabled: false
@@ -146,7 +156,8 @@ resource DevSQLLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-
 }
 //hub
 resource HubAppServiceLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
-  name: '${appServicePrivateDnsZone.name}/link-hub'
+  parent: appServicePrivateDnsZone
+  name: 'link-hub'
   location: 'global'
   properties: {
     registrationEnabled: false
@@ -156,7 +167,8 @@ resource HubAppServiceLink 'Microsoft.Network/privateDnsZones/virtualNetworkLink
   }
 }
 resource HubSQLLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
-  name: '${sqlPrivateDnsZone.name}/link-hub'
+  parent: sqlPrivateDnsZone
+  name: 'link-hub'
   location: 'global'
   properties: {
     registrationEnabled: false
@@ -166,7 +178,8 @@ resource HubSQLLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-
   }
 }
 resource HubStorageAccountLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
-  name: '${storageAccountPrivateDnsZone.name}/link-hub'
+  parent: storageAccountPrivateDnsZone
+  name: 'link-hub'
   location: 'global'
   properties: {
     registrationEnabled: false
@@ -177,7 +190,8 @@ resource HubStorageAccountLink 'Microsoft.Network/privateDnsZones/virtualNetwork
 }
 //prod
 resource ProdAppServiceLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
-  name: '${appServicePrivateDnsZone.name}/link-prod'
+  parent: appServicePrivateDnsZone
+  name: 'link-prod'
   location: 'global'
   properties: {
     registrationEnabled: false
@@ -187,7 +201,8 @@ resource ProdAppServiceLink 'Microsoft.Network/privateDnsZones/virtualNetworkLin
   }
 }
 resource ProdSQLLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
-  name: '${sqlPrivateDnsZone.name}/link-prod'
+  parent: sqlPrivateDnsZone
+  name: 'link-prod'
   location: 'global'
   properties: {
     registrationEnabled: false
@@ -197,7 +212,8 @@ resource ProdSQLLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020
   }
 }
 resource ProdStorageAccountLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
-  name: '${storageAccountPrivateDnsZone.name}/link-prod'
+  parent: storageAccountPrivateDnsZone
+  name: 'link-prod'
   location: 'global'
   properties: {
     registrationEnabled: false

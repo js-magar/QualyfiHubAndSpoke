@@ -11,6 +11,7 @@ param routeTableName string
 param logAnalyticsWorkspaceName string
 param recoveryServiceVaultName string
 param randString string
+param keyVaultPrivateDnsZoneName string
 
 var virtualNetworkName = 'vnet-core-${RGLocation}-001'
 var vmName ='vm-core-${RGLocation}-001'
@@ -141,6 +142,22 @@ resource vmAMAExtension 'Microsoft.Compute/virtualMachines/extensions@2023-07-01
     enableAutomaticUpgrade: true
   }
 }
+resource vmAntiMalwareExtension 'Microsoft.Compute/virtualMachines/extensions@2023-07-01' ={
+  parent:windowsVM
+  name:'AntiMalwareAgent'
+  location:RGLocation
+  properties:{
+    publisher: 'Microsoft.Azure.Security'
+    type:'IaaSAntiMalware'
+    typeHandlerVersion:'1.3'
+    autoUpgradeMinorVersion: true
+    enableAutomaticUpgrade: true
+    settings:{
+      AntiMalwareEnabled:true
+      RealtimeProtectionEnabled:true
+    }
+  }
+}
 resource solution 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = {
   location: RGLocation
   name: 'VMInsights(${split(logAnalyticsWorkspace.id, '/')[8]})'
@@ -166,6 +183,7 @@ resource windowsVMBackup 'Microsoft.RecoveryServices/vaults/backupFabrics/protec
     sourceResourceId: windowsVM.id
   }
 }
+
 //Key Vault
 resource encryptionKeyVault 'Microsoft.KeyVault/vaults@2023-02-01'={
   name:'kv-encrypt-core-${randString}'
@@ -206,6 +224,44 @@ resource DiskEncryption 'Microsoft.Compute/virtualMachines/extensions@2023-07-01
       ResizeOSDisk: false
     }
   }
+}
+resource KVubnet 'Microsoft.Network/virtualNetworks/subnets@2023-05-01' existing = {name: 'KVSubnet',parent: virtualNetwork}
+//DNS Settings
+resource keyVaultPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' existing = {
+  name: keyVaultPrivateDnsZoneName
+}
+resource privateEndpointDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-05-01' = {
+  parent: keyVaultPrivateEndpoint
+  name: 'dnsgroupname'
+  properties: {
+    privateDnsZoneConfigs: [
+      {
+        name: 'config1'
+        properties: {
+          privateDnsZoneId: keyVaultPrivateDnsZone.id
+        }
+      }
+    ]
+  }
+}
+resource keyVaultPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-05-01' = {
+  name:'private-endpoint-${encryptionKeyVault.name}'
+  location:RGLocation
+  properties:{
+    subnet:{
+      id:KVubnet.id
+    }
+    privateLinkServiceConnections:[
+      {
+        name:'private-endpoint-${encryptionKeyVault.name}'
+        properties:{
+          privateLinkServiceId: encryptionKeyVault.id
+          groupIds:[
+            'vault'
+          ]
+        }
+  }]
+  } 
 }
 
 
