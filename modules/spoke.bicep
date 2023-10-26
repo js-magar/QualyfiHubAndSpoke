@@ -105,7 +105,7 @@ resource appService 'Microsoft.Web/sites@2022-09-01' ={
         }
         {
           name:'ApplicationInsightsAgent_EXTENSION_VERSION'
-          value:'~2'
+          value:'~3'
         }
         {
           name:'XDT_MicrosoftApplicationInsights_Mode'
@@ -147,7 +147,7 @@ resource appServicePrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-05-0
   }
 }
 resource appServiceDiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = if (devOrProd == 'prod') {
-  name: 'prodAppServiceDiagnosticSettings'
+  name: '${devOrProd}-${RGLocation}-aSDiagnosticSettings'
   scope: appService
   properties: {
     logs: [
@@ -170,7 +170,7 @@ resource appServiceDiagnosticSettings 'Microsoft.Insights/diagnosticSettings@202
   ]
 }
 resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
-  name:'appServiceInsights'
+  name:'${devOrProd}-${RGLocation}-aSInsights'
   location:RGLocation
   kind:'web'
   properties: {
