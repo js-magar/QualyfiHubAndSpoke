@@ -94,6 +94,16 @@ resource appService 'Microsoft.Web/sites@2022-09-01' ={
     serverFarmId:appServicePlan.id
     siteConfig:{
       linuxFxVersion:'DOTNETCORE|7.0'
+      appSettings:[
+        {
+          name:'APPINSIGHTS_INSTRUMENTATIONKEY'
+          value:applicationInsights.properties.InstrumentationKey
+        }
+        {
+          name:'APPLICATIONINSIGHTS_CONNECTION_STRING'
+          value:applicationInsights.properties.ConnectionString
+        }
+      ]
     }
   }
 }
