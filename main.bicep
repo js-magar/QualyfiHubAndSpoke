@@ -1,5 +1,4 @@
 param RGLocation string
-@secure()
 param CoreSecretsKeyVaultName string
 param RandString string
 

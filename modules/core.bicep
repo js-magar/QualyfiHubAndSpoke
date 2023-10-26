@@ -148,12 +148,11 @@ resource vmAntiMalwareExtension 'Microsoft.Compute/virtualMachines/extensions@20
   location:RGLocation
   properties:{
     publisher: 'Microsoft.Azure.Security'
-    type:'IaaSAntiMalware'
+    type:'IaaSAntimalware'
     typeHandlerVersion:'1.3'
     autoUpgradeMinorVersion: true
-    enableAutomaticUpgrade: true
     settings:{
-      AntiMalwareEnabled:true
+      AntimalwareEnabled:true
       RealtimeProtectionEnabled:true
     }
   }

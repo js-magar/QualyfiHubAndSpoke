@@ -289,10 +289,10 @@ resource hubGatewayPIP 'Microsoft.Network/publicIPAddresses@2023-05-01' = {
   name: 'pip-hubGateway-hub-${RGLocation}-001'
   location: RGLocation
   sku: {
-    name: 'Standard'
+    name: 'Basic'
   }
   properties: {
-    publicIPAllocationMethod: 'Static'
+    publicIPAllocationMethod: 'Dynamic'
   }
 }
 resource hubGateway 'Microsoft.Network/virtualNetworkGateways@2023-05-01' ={
