@@ -85,6 +85,9 @@ resource windowsVM 'Microsoft.Compute/virtualMachines@2020-12-01' = {
       adminUsername: adminUsername
       adminPassword: adminPassword
       allowExtensionOperations:true
+      windowsConfiguration:{
+        provisionVMAgent:true
+      }
     }
     storageProfile: {
       imageReference: {
@@ -141,6 +144,9 @@ resource vmAMAExtension 'Microsoft.Compute/virtualMachines/extensions@2023-07-01
     autoUpgradeMinorVersion: true
     enableAutomaticUpgrade: true
   }
+  dependsOn: [
+    dataCollectionRuleAssociation
+  ]
 }
 resource vmAntiMalwareExtension 'Microsoft.Compute/virtualMachines/extensions@2023-07-01' ={
   parent:windowsVM
@@ -170,6 +176,73 @@ resource solution 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' 
     publisher: 'Microsoft'
   }
 }
+resource dataCollectionRule 'Microsoft.Insights/dataCollectionRules@2022-06-01' = {
+  name: 'MSVMI-vmDataCollectionRule'
+  location: RGLocation
+  identity:{
+    type:'None'
+  }
+  properties:{
+    dataSources:{
+      windowsEventLogs:[
+        {
+          name:'WindowsEventLogs'
+          streams: [
+            'Microsoft-Event'
+          ]
+          xPathQueries: [
+            'Application!*[System[(Level=1 or Level=2 or Level=3 or Level=4 or Level=0 or Level=5)]]'
+            'Security!*[System[(band(Keywords,13510798882111488))]]'
+            'System!*[System[(Level=1 or Level=2 or Level=3 or Level=4 or Level=0 or Level=5)]]'
+          ]
+        }
+      ]
+      performanceCounters: [
+        {
+            name: 'VMInsightsPerfCounters'
+            streams: [
+                'Microsoft-InsightsMetrics'
+            ]
+            scheduledTransferPeriod: 'PT1M'
+            samplingFrequencyInSeconds: 60
+            counterSpecifiers: [
+                '\\VmInsights\\DetailedMetrics'
+            ]
+        }
+      ]
+    }
+    destinations:{
+      logAnalytics:[{
+        name:'VMInsightsPerf-Logs-Dest'
+        workspaceResourceId:logAnalyticsWorkspace.id
+      }]
+    }
+    dataFlows: [
+      {
+        streams: [
+          'Microsoft-Perf'
+          'Microsoft-Event'
+          'Microsoft-InsightsMetrics'
+        ]
+        destinations: [
+          'VMInsightsPerf-Logs-Dest'
+        ]
+      }
+    ]
+  }
+
+}
+resource dataCollectionRuleAssociation 'Microsoft.Insights/dataCollectionRuleAssociations@2022-06-01' ={
+  scope: windowsVM
+  name: 'vmDataCollectionRuleAssociation'
+  properties: {
+    description: 'Association of data collection rule for VM Insights.'
+    dataCollectionRuleId: dataCollectionRule.id
+  }
+}
+
+
+
 resource recoveryServiceVaults 'Microsoft.RecoveryServices/vaults@2023-06-01'existing = {
   name:recoveryServiceVaultName
 }
