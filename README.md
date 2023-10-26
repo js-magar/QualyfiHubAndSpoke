@@ -12,6 +12,6 @@ Once connected please run the following code to deploy the template:
 ```
 To check that after deployment your backup is correctly woring use:
 ```
-Get-AzRecoeryservicesBackupJob
+Get-AzRecoveryservicesBackupJob
 ```
 
