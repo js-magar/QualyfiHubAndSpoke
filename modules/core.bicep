@@ -182,7 +182,6 @@ resource windowsVMBackup 'Microsoft.RecoveryServices/vaults/backupFabrics/protec
     sourceResourceId: windowsVM.id
   }
 }
-
 //Key Vault
 resource encryptionKeyVault 'Microsoft.KeyVault/vaults@2023-02-01'={
   name:'kv-encrypt-core-${randString}'

@@ -103,7 +103,16 @@ resource appService 'Microsoft.Web/sites@2022-09-01' ={
           name:'APPLICATIONINSIGHTS_CONNECTION_STRING'
           value:applicationInsights.properties.ConnectionString
         }
+        {
+          name:'ApplicationInsightsAgent_EXTENSION_VERSION'
+          value:'~2'
+        }
+        {
+          name:'XDT_MicrosoftApplicationInsights_Mode'
+          value:'default'
+        }
       ]
+      alwaysOn:true
     }
   }
 }
@@ -143,7 +152,7 @@ resource appServiceDiagnosticSettings 'Microsoft.Insights/diagnosticSettings@202
   properties: {
     logs: [
       {
-        category: ''
+        category: null
         categoryGroup: 'allLogs'
         enabled: true
       }
@@ -156,6 +165,9 @@ resource appServiceDiagnosticSettings 'Microsoft.Insights/diagnosticSettings@202
     ]
     workspaceId: logAnalyticsWorkspace.id
   }
+  dependsOn:[
+    applicationInsights
+  ]
 }
 resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
   name:'appServiceInsights'

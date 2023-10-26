@@ -101,6 +101,7 @@ module hub 'modules/hub.bicep'={
   dependsOn:[coreServices
     prodSpoke]
 }
+/*
 module hubGateway 'modules/hubGateway.bicep'= {
   name:'hubGatewayDeployment'
   params:{
@@ -111,6 +112,7 @@ module hubGateway 'modules/hubGateway.bicep'= {
   dependsOn:[hub
     peerings] // so deploys at end
 }
+*/
 module core 'modules/core.bicep'={
   name:'coreDeployment'
   params:{

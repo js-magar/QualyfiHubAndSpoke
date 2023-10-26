@@ -278,7 +278,7 @@ resource appGateway 'Microsoft.Network/applicationGateways@2023-05-01' = {
     }
     autoscaleConfiguration:{
       minCapacity:1
-      maxCapacity:3
+      maxCapacity:5
     }
   }
 }
