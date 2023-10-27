@@ -12,6 +12,7 @@ param logAnalyticsWorkspaceName string
 param recoveryServiceVaultName string
 param keyVaultPrivateDnsZoneName string
 param CoreEncryptKeyVaultName string
+param RecoverySAName string
 
 var virtualNetworkName = 'vnet-core-${RGLocation}-001'
 var vmName ='vm-core-${RGLocation}-001'
@@ -148,6 +149,20 @@ resource vmAMAExtension 'Microsoft.Compute/virtualMachines/extensions@2023-07-01
     dataCollectionRuleAssociation
   ]
 }
+resource windowsVMGuestConfigExtension 'Microsoft.Compute/virtualMachines/extensions@2020-12-01' = {
+  parent: windowsVM
+  name: 'AzurePolicyforWindows'
+  location: RGLocation
+  properties: {
+    publisher: 'Microsoft.GuestConfiguration'
+    type: 'ConfigurationforWindows'
+    typeHandlerVersion: '1.0'
+    autoUpgradeMinorVersion: true
+    enableAutomaticUpgrade: true
+    settings: {}
+    protectedSettings: {}
+  }
+}
 resource vmAntiMalwareExtension 'Microsoft.Compute/virtualMachines/extensions@2023-07-01' ={
   parent:windowsVM
   name:'AntiMalwareAgent'
@@ -225,6 +240,19 @@ resource dataCollectionRuleAssociation 'Microsoft.Insights/dataCollectionRuleAss
   properties: {
     description: 'Association of data collection rule for VM Insights.'
     dataCollectionRuleId: dataCollectionRule.id
+  }
+}
+resource solution 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = {
+  location: RGLocation
+  name: 'VMInsights(${split(logAnalyticsWorkspace.id, '/')[8]})'
+  properties: {
+    workspaceResourceId: logAnalyticsWorkspace.id
+  }
+  plan: {
+    name: 'VMInsights(${split(logAnalyticsWorkspace.id, '/')[8]})'
+    product: 'OMSGallery/VMInsights'
+    promotionCode: ''
+    publisher: 'Microsoft'
   }
 }
 
@@ -321,6 +349,14 @@ resource keyVaultPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-05-01'
   }]
   } 
 }
-
+//StorageAccount
+resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
+  name: RecoverySAName
+  kind: 'StorageV2'
+  location: RGLocation
+  sku:{
+    name:'Standard_LRS'
+  }
+}
 
 

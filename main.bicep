@@ -22,6 +22,13 @@ var prodAppServiceName = 'as-prod-${RGLocation}-001-${RandString}'
 var logAnalyticsWorkspaceName = 'log-core-${RGLocation}-001-${RandString}'
 var recoveryServiceVaultName = 'rsv-core-${RGLocation}-001'
 
+//tags
+var hubTag ={ Dept:'Hub', Owner:'HubOwner'}
+var coreTag ={ Dept:'Core', Owner:'CoreOwner'}
+var prodTag ={ Dept:'Prod', Owner:'ProdOwner'}
+var devTag ={ Dept:'Dev', Owner:'DevOwner'}
+var coreServicesTag ={ Dept:'CoreServices', Owner:'CoreServicesOwner'}
+
 
 resource keyVault 'Microsoft.KeyVault/vaults@2023-02-01' existing = {
   name: CoreSecretsKeyVaultName
@@ -127,6 +134,7 @@ module core 'modules/core.bicep'={
     recoveryServiceVaultName:recoveryServiceVaultName
     keyVaultPrivateDnsZoneName:coreServices.outputs.encryptKVPrivateDnsZoneName
     CoreEncryptKeyVaultName:CoreEncryptKeyVaultName
+    RecoverySAName:'sacore${RGLocation}${RandString}'
   }
   dependsOn:[coreServices]
 }
