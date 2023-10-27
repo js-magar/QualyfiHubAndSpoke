@@ -17,6 +17,7 @@ $RGName = (Get-AzResourceGroup).ResourceGroupName
 $RGLocation = (Get-AzResourceGroup).Location
 $CoreTags = @{"Area"="CoreServices"}
 $CoreSecretsKeyVaultName = "kv-secret-core-" + (RandomiseString 6)
+$CoreEncryptKeyVaultName = "kv-encrypt-core-" + (RandomiseString 6)
 $RecoveryServiceVaultName = 'rsv-core-'+$RGLocation+'-001'
 $vmName = 'vm-core-'+$RGLocation+'-001'
 
@@ -43,11 +44,9 @@ Set-AzKeyVaultSecret -VaultName $CoreSecretsKeyVaultName -Name "SQLAdminPassword
 
 
 New-AzResourceGroupDeployment -ResourceGroupName $RGName -TemplateFile main.bicep `
--RGLocation $RGLocation -CoreSecretsKeyVaultName $CoreSecretsKeyVaultName -RandString (RandomiseString 6 "abcdefghijklmnopqrstuvwxyz1234567890") 
-#Get Recovery Vault
-Get-AzRecoveryServicesVault -ResourceGroupName $RGName -Name $RecoveryServiceVaultName | Set-AzRecoveryServicesVaultContext
-$backupContainer = Get-AzRecoveryServicesBackupContainer -ContainerType "AzureVM" -FriendlyName $vmName 
-$item = Get-AzRecoveryServicesBackupItem -Container $backupcontainer -WorkloadType "AzureVM"
-
-Backup-AzRecoveryServicesBackupItem -Item $item
-#New-AzResourceGroupDeployment -ResourceGroupName '1-1950a98a-playground-sandbox' -TemplateFile modules\core.bicep -RGLocation 'eastus' -vnetAddressPrefix '10.20'
+-RGLocation $RGLocation -CoreSecretsKeyVaultName $CoreSecretsKeyVaultName -CoreEncryptKeyVaultName $CoreEncryptKeyVaultName -RandString (RandomiseString 6 "abcdefghijklmnopqrstuvwxyz1234567890") 
+#Set backup access policy
+$bms = Get-AzADServicePrincipal -DisplayName "Backup Management Service"
+Set-AzKeyVaultAccessPolicy -VaultName $CoreEncryptKeyVaultName -ObjectId $bms.id -PermissionsToSecrets Get,List,Backup -PermissionsToKeys Get,List,Backup
+#RunBackup
+.\backup.ps1

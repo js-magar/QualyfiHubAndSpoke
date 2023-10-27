@@ -1,5 +1,6 @@
 param RGLocation string
 param CoreSecretsKeyVaultName string
+param CoreEncryptKeyVaultName string
 param RandString string
 
 var GatewaySubnetName ='GatewaySubnet'
@@ -124,8 +125,8 @@ module core 'modules/core.bicep'={
     routeTableName:routeTable.name
     logAnalyticsWorkspaceName:logAnalyticsWorkspaceName
     recoveryServiceVaultName:recoveryServiceVaultName
-    randString:RandString
     keyVaultPrivateDnsZoneName:coreServices.outputs.encryptKVPrivateDnsZoneName
+    CoreEncryptKeyVaultName:CoreEncryptKeyVaultName
   }
   dependsOn:[coreServices]
 }

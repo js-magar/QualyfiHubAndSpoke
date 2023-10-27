@@ -10,8 +10,8 @@ param defaultNSGName string
 param routeTableName string
 param logAnalyticsWorkspaceName string
 param recoveryServiceVaultName string
-param randString string
 param keyVaultPrivateDnsZoneName string
+param CoreEncryptKeyVaultName string
 
 var virtualNetworkName = 'vnet-core-${RGLocation}-001'
 var vmName ='vm-core-${RGLocation}-001'
@@ -163,19 +163,6 @@ resource vmAntiMalwareExtension 'Microsoft.Compute/virtualMachines/extensions@20
     }
   }
 }
-resource solution 'Microsoft.OperationsManagement/solutions@2015-11-01-preview' = {
-  location: RGLocation
-  name: 'VMInsights(${split(logAnalyticsWorkspace.id, '/')[8]})'
-  properties: {
-    workspaceResourceId: logAnalyticsWorkspace.id
-  }
-  plan: {
-    name: 'VMInsights(${split(logAnalyticsWorkspace.id, '/')[8]})'
-    product: 'OMSGallery/VMInsights'
-    promotionCode: ''
-    publisher: 'Microsoft'
-  }
-}
 resource dataCollectionRule 'Microsoft.Insights/dataCollectionRules@2022-06-01' = {
   name: 'MSVMI-vmDataCollectionRule'
   location: RGLocation
@@ -257,7 +244,7 @@ resource windowsVMBackup 'Microsoft.RecoveryServices/vaults/backupFabrics/protec
 }
 //Key Vault
 resource encryptionKeyVault 'Microsoft.KeyVault/vaults@2023-02-01'={
-  name:'kv-encrypt-core-${randString}'
+  name:CoreEncryptKeyVaultName
   location:RGLocation
   properties:{
     accessPolicies:[]
