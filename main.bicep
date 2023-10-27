@@ -1,5 +1,5 @@
 param RGLocation string
-param CoreSecretsKeyVaultName string
+param CoreSecVaultName string
 param CoreEncryptKeyVaultName string
 param RandString string
 
@@ -22,6 +22,12 @@ var prodAppServiceName = 'as-prod-${RGLocation}-001-${RandString}'
 var logAnalyticsWorkspaceName = 'log-core-${RGLocation}-001-${RandString}'
 var recoveryServiceVaultName = 'rsv-core-${RGLocation}-001'
 
+//Prefixes
+var prodVnetAddressPrefix = '10.31'
+var devVnetAddressPrefix = '10.30'
+var coreVnetAddressPrefix = '10.20'
+var hubVnetAddressPrefix = '10.10'
+
 //tags
 var hubTag ={ Dept:'Hub', Owner:'HubOwner'}
 var coreTag ={ Dept:'Core', Owner:'CoreOwner'}
@@ -31,15 +37,17 @@ var coreServicesTag ={ Dept:'CoreServices', Owner:'CoreServicesOwner'}
 
 
 resource keyVault 'Microsoft.KeyVault/vaults@2023-02-01' existing = {
-  name: CoreSecretsKeyVaultName
+  name: CoreSecVaultName
 }
 resource defaultNSG 'Microsoft.Network/networkSecurityGroups@2023-05-01' ={
   name: DefaultNSGName
   location:RGLocation
+  tags:coreServicesTag
 }
 resource routeTable 'Microsoft.Network/routeTables@2019-11-01' = {
   name: 'routetable-${RGLocation}-001'
   location: RGLocation
+  tags:hubTag
 }
 module coreServices 'modules/coreServices.bicep'={
   name:'coreServicesDeployment'
@@ -51,6 +59,15 @@ module coreServices 'modules/coreServices.bicep'={
     RGLocation:RGLocation
     logAnalyticsWorkspaceName:logAnalyticsWorkspaceName
     recoveryServiceVaultName:recoveryServiceVaultName
+    coreVnetAddress:'${coreVnetAddressPrefix}.0.0/16'
+    devVnetAddress: '${devVnetAddressPrefix}.0.0/16'
+    prodVnetAddress:'${prodVnetAddressPrefix}.0.0/16'
+    hubVnetAddress:'${hubVnetAddressPrefix}.0.0/16'
+    devTag:devTag
+    hubTag:hubTag
+    coreTag:coreTag
+    prodTag:prodTag
+    coreServicesTag:coreServicesTag
   }
 }
 module devSpoke 'modules/spoke.bicep'={
@@ -58,7 +75,7 @@ module devSpoke 'modules/spoke.bicep'={
   params:{
     RGLocation:RGLocation
     devOrProd:'dev'
-    vnetAddressPrefix:'10.30'
+    vnetAddressPrefix:devVnetAddressPrefix
     randString: RandString
     adminUsername:keyVault.getSecret('SQLAdminUsername')
     adminPassword:keyVault.getSecret('SQLAdminPassword')
@@ -70,6 +87,7 @@ module devSpoke 'modules/spoke.bicep'={
     appServiceName:devAppServiceName
     appServicePlanName:devAppServicePlanName
     logAnalyticsWorkspaceName:logAnalyticsWorkspaceName
+    tagSpoke:devTag
   }
   dependsOn:[coreServices]
 }
@@ -78,7 +96,7 @@ module prodSpoke 'modules/spoke.bicep'={
   params:{
     RGLocation:RGLocation
     devOrProd:'prod'
-    vnetAddressPrefix:'10.31'
+    vnetAddressPrefix:prodVnetAddressPrefix
     randString: RandString
     adminUsername:keyVault.getSecret('SQLAdminUsername')
     adminPassword:keyVault.getSecret('SQLAdminPassword')
@@ -90,6 +108,7 @@ module prodSpoke 'modules/spoke.bicep'={
     appServiceName:prodAppServiceName
     appServicePlanName:prodAppServicePlanName
     logAnalyticsWorkspaceName:logAnalyticsWorkspaceName
+    tagSpoke:prodTag
   }
   dependsOn:[coreServices]
 }
@@ -97,7 +116,7 @@ module hub 'modules/hub.bicep'={
   name:'hubDeployment'
   params:{
     RGLocation:RGLocation
-    vnetAddressPrefix:'10.10'
+    vnetAddressPrefix:hubVnetAddressPrefix
     GatewaySubnetName:GatewaySubnetName
     AppgwSubnetName:AppgwSubnetName
     AzureFirewallSubnetName:AzureFirewallSubnetName
@@ -105,6 +124,7 @@ module hub 'modules/hub.bicep'={
     firewallName:firewallName
     prodAppServiceName:prodAppServiceName
     logAnalyticsWorkspaceName:logAnalyticsWorkspaceName
+    hubTag:hubTag
   }
   dependsOn:[coreServices
     prodSpoke]
@@ -125,7 +145,7 @@ module core 'modules/core.bicep'={
   name:'coreDeployment'
   params:{
     RGLocation:RGLocation
-    vnetAddressPrefix:'10.20'
+    vnetAddressPrefix:coreVnetAddressPrefix
     adminUsername:keyVault.getSecret('VMAdminUsername')
     adminPassword:keyVault.getSecret('VMAdminPassword')
     defaultNSGName:defaultNSG.name
@@ -135,6 +155,7 @@ module core 'modules/core.bicep'={
     keyVaultPrivateDnsZoneName:coreServices.outputs.encryptKVPrivateDnsZoneName
     CoreEncryptKeyVaultName:CoreEncryptKeyVaultName
     RecoverySAName:'sacore${RGLocation}${RandString}'
+    coreTag:coreTag
   }
   dependsOn:[coreServices]
 }
@@ -142,9 +163,8 @@ module peerings 'modules/peerings.bicep'={
   name:'peeringsDeployment'
   params:{
     RGLocation:RGLocation
-    //AzureFirewallSubnetName:AzureFirewallSubnetName
-    //firewallName:firewallName
     firewallPrivateIP:hub.outputs.firewallPrivateIP
+    hubTag:hubTag
   }
   dependsOn:[
     devSpoke

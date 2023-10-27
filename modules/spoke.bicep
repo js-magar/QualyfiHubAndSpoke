@@ -18,6 +18,7 @@ param storageAccountPrivateDnsZoneName string
 param appServicePlanName string
 param appServiceName string
 param logAnalyticsWorkspaceName string
+param tagSpoke object
 
 var virtualNetworkName = 'vnet-${devOrProd}-${RGLocation}-001'
 var appServicePlanSku = 'B1'
@@ -27,6 +28,11 @@ var SQLServerSku = 'Basic'
 var SQLDatabaseName = 'sqldb-${devOrProd}-${RGLocation}-001-${randString}'
 var SQLServerSubnetName ='SqlSubnet'
 var storageAccountName = 'st${devOrProd}001${randString}'
+var SASubnetName ='StSubnet'
+var appServiceRepoURL = 'https://github.com/Azure-Samples/dotnetcore-docs-hello-world'
+var appServicePrivateEndpointName = 'private-endpoint-${appService.name}'
+var sqlServerPrivateEndpointName = 'private-endpoint-${sqlServer.name}'
+var storageAccountPrivateEndpointName ='private-endpoint-${storageAccount.name}'
 
 resource routeTable 'Microsoft.Network/routeTables@2019-11-01' existing = {name: routeTableName}
 
@@ -36,6 +42,7 @@ resource defaultNSG 'Microsoft.Network/networkSecurityGroups@2023-05-01' existin
 resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-05-01' = {
   name: virtualNetworkName
   location: RGLocation
+  tags:tagSpoke
   properties: {
     addressSpace: {
       addressPrefixes: [
@@ -65,10 +72,9 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2023-05-01' = {
 resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' existing = {
   name:logAnalyticsWorkspaceName
 }
-
 resource storageAccountSubnet 'Microsoft.Network/virtualNetworks/subnets@2021-03-01' = if (devOrProd == 'prod') {
   parent: virtualNetwork
-  name: 'StSubnet'
+  name: SASubnetName
   properties: {
     addressPrefix: '${vnetAddressPrefix}.3.0/24'
     networkSecurityGroup:{  id: defaultNSG.id }
@@ -78,6 +84,7 @@ resource storageAccountSubnet 'Microsoft.Network/virtualNetworks/subnets@2021-03
 resource appServicePlan 'Microsoft.Web/serverfarms@2022-09-01'={
   name: appServicePlanName
   location:RGLocation
+  tags:tagSpoke
   kind: 'linux'
   sku:{
     name: appServicePlanSku
@@ -90,6 +97,7 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-09-01'={
 resource appService 'Microsoft.Web/sites@2022-09-01' ={
   name:appServiceName
   location:RGLocation
+  tags:tagSpoke
   properties:{
     serverFarmId:appServicePlan.id
     siteConfig:{
@@ -120,7 +128,7 @@ resource codeAppService 'Microsoft.Web/sites/sourcecontrols@2022-09-01' ={
   parent: appService
   name:'web'
   properties:{
-    repoUrl:'https://github.com/Azure-Samples/dotnetcore-docs-hello-world'
+    repoUrl:appServiceRepoURL
     isManualIntegration:true
     branch:'master'
   }
@@ -128,15 +136,16 @@ resource codeAppService 'Microsoft.Web/sites/sourcecontrols@2022-09-01' ={
 resource AppServiceSubnet 'Microsoft.Network/virtualNetworks/subnets@2023-05-01' existing = {name: appServiceSubnetName,parent: virtualNetwork
 }
 resource appServicePrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-05-01' ={
-  name:'private-endpoint-${appService.name}'
+  name:appServicePrivateEndpointName
   location:RGLocation
+  tags:tagSpoke
   properties:{
     subnet:{
       id:AppServiceSubnet.id
     }
     privateLinkServiceConnections:[
       {
-        name:'private-endpoint-${appService.name}'
+        name:appServicePrivateEndpointName
         properties:{
           privateLinkServiceId: appService.id
           groupIds:[
@@ -172,6 +181,7 @@ resource appServiceDiagnosticSettings 'Microsoft.Insights/diagnosticSettings@202
 resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
   name:'${devOrProd}-${RGLocation}-aSInsights'
   location:RGLocation
+  tags:tagSpoke
   kind:'web'
   properties: {
     Application_Type: 'web'
@@ -182,6 +192,7 @@ resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
 resource sqlServer 'Microsoft.Sql/servers@2021-11-01' = {
   name:SQLServerName
   location:RGLocation
+  tags:tagSpoke
   properties:{
     administratorLogin:adminUsername
     administratorLoginPassword:adminPassword
@@ -190,6 +201,7 @@ resource sqlServer 'Microsoft.Sql/servers@2021-11-01' = {
 resource sqlDB 'Microsoft.Sql/servers/databases@2021-11-01' = {
   name:SQLDatabaseName
   location:RGLocation
+  tags:tagSpoke
   parent: sqlServer
   sku:{
     name:SQLServerSku
@@ -199,15 +211,16 @@ resource sqlDB 'Microsoft.Sql/servers/databases@2021-11-01' = {
 resource SQLSubnet 'Microsoft.Network/virtualNetworks/subnets@2023-05-01' existing = {name: SQLServerSubnetName,parent: virtualNetwork
 }
 resource sqlServerPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-05-01' ={
-  name:'private-endpoint-${sqlServer.name}'
+  name:sqlServerPrivateEndpointName
   location:RGLocation
+  tags:tagSpoke
   properties:{
     subnet:{
       id:SQLSubnet.id
     }
     privateLinkServiceConnections:[
       {
-        name:'private-endpoint-${sqlServer.name}'
+        name:sqlServerPrivateEndpointName
         properties:{
           privateLinkServiceId: sqlServer.id
           groupIds:[
@@ -221,21 +234,23 @@ resource sqlServerPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-05-01
 resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = if (devOrProd == 'prod') {
   name: storageAccountName
   kind: 'StorageV2'
+  tags:tagSpoke
   location: RGLocation
   sku:{
     name:'Standard_LRS'
   }
 }
 resource storageAccountPrivateEndpoint 'Microsoft.Network/privateEndpoints@2023-05-01' = if (devOrProd == 'prod') {
-  name:'private-endpoint-${storageAccount.name}'
+  name:storageAccountPrivateEndpointName
   location:RGLocation
+  tags:tagSpoke
   properties:{
     subnet:{
       id:storageAccountSubnet.id
     }
     privateLinkServiceConnections:[
       {
-        name:'private-endpoint-${storageAccount.name}'
+        name:storageAccountPrivateEndpointName
         properties:{
           privateLinkServiceId: storageAccount.id
           groupIds:[
@@ -250,7 +265,8 @@ resource appServicePrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01'
   name: appServicePrivateDnsZoneName
 }
 resource privateEndpointDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-05-01' = {
-  name: '${appServicePrivateEndpoint.name}/dnsgroupname'
+  parent: appServicePrivateEndpoint
+  name: 'dnsgroupname'
   properties: {
     privateDnsZoneConfigs: [
       {
@@ -266,7 +282,8 @@ resource sqlPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' existi
   name: sqlPrivateDnsZoneName
 }
 resource sqlPrivateDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-05-01' = {
-  name: '${sqlServerPrivateEndpoint.name}/dnsgroupname'
+  parent: sqlServerPrivateEndpoint
+  name: 'dnsgroupname'
   properties: {
     privateDnsZoneConfigs: [
       {
@@ -282,7 +299,8 @@ resource storageAccountPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06
   name: storageAccountPrivateDnsZoneName
 }
 resource storageAccountPrivateDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2023-05-01' = if (devOrProd == 'prod') {
-  name: '${storageAccountPrivateEndpoint.name}/dnsgroupname'
+  parent: storageAccountPrivateEndpoint
+  name: 'dnsgroupname'
   properties: {
     privateDnsZoneConfigs: [
       {

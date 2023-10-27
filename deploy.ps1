@@ -44,9 +44,24 @@ Set-AzKeyVaultSecret -VaultName $CoreSecretsKeyVaultName -Name "SQLAdminPassword
 
 
 New-AzResourceGroupDeployment -ResourceGroupName $RGName -TemplateFile main.bicep `
--RGLocation $RGLocation -CoreSecretsKeyVaultName $CoreSecretsKeyVaultName -CoreEncryptKeyVaultName $CoreEncryptKeyVaultName -RandString (RandomiseString 6 "abcdefghijklmnopqrstuvwxyz1234567890") 
+-RGLocation $RGLocation -CoreSecVaultName $CoreSecretsKeyVaultName -CoreEncryptKeyVaultName $CoreEncryptKeyVaultName -RandString (RandomiseString 6 "abcdefghijklmnopqrstuvwxyz1234567890") 
 #Set backup access policy
+Write-Output "Press Enter when All Resources are deployed"
+Pause
 $bms = Get-AzADServicePrincipal -DisplayName "Backup Management Service"
 Set-AzKeyVaultAccessPolicy -VaultName $CoreEncryptKeyVaultName -ObjectId $bms.id -PermissionsToSecrets Get,List,Backup -PermissionsToKeys Get,List,Backup
 #RunBackup
 .\backup.ps1
+#$AG = Get-AzApplicationGateway -ResourceGroupName $RGName
+#$AGPIPID = $AG[0].frontendIPConfigurations.Properties.publicIPAddress.id
+#$AGPIP = Get-AzPublicIpAddress -Id $AGPIPID
+#$AGName = $AG[0].Name
+Write-Output "Virtual Machine Admin Username : $VMAdminUsernameP"
+Write-Output "Virtual Machine Admin Password : $VMAdminPasswordP"
+Write-Output "SQL Admin Password : $SQLAdminUsernameP"
+Write-Output "SQL Admin Password : $SQLAdminPasswordP"
+Write-Output "CoreSecretsKeyVaultName : $CoreSecretsKeyVaultName"
+#Write-Output "AppGWPIP : $AGPIP.IpAddress"
+##Write-Output "AppGWDNS : $AGName.azurewebsites.net"
+
+
