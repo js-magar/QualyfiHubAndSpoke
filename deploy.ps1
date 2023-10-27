@@ -11,7 +11,7 @@ function SecureString{
     param ([string]$unsecuredString = "a")
     return (ConvertTo-SecureString $unsecuredString -AsPlainText -Force)
     
-}
+} 
 #Parameters Decleration
 $RGName = (Get-AzResourceGroup).ResourceGroupName
 $RGLocation = (Get-AzResourceGroup).Location
